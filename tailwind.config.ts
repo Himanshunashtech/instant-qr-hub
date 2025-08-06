@@ -27,7 +27,7 @@ export default {
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
-					glow: 'hsl(var(--primary-glow))'
+					hover: 'hsl(var(--primary-hover))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -53,6 +53,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				'dark-panel': 'hsl(var(--dark-panel))',
+				'dark-panel-foreground': 'hsl(var(--dark-panel-foreground))',
+				'dark-input': 'hsl(var(--dark-input))',
+				'dark-border': 'hsl(var(--dark-border))',
+				'qr-preview-bg': 'hsl(var(--qr-preview-bg))',
+				'qr-dark': 'hsl(var(--qr-dark))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -63,20 +69,6 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
-			},
-			backgroundImage: {
-				'gradient-primary': 'var(--gradient-primary)',
-				'gradient-card': 'var(--gradient-card)',
-				'gradient-scanner': 'var(--gradient-scanner)'
-			},
-			boxShadow: {
-				'card': 'var(--shadow-card)',
-				'button': 'var(--shadow-button)',
-				'scanner': 'var(--shadow-scanner)'
-			},
-			transitionTimingFunction: {
-				'smooth': 'var(--transition-smooth)',
-				'spring': 'var(--transition-spring)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

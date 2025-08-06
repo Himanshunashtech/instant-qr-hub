@@ -2,52 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* QR Scanner Pro Design System - Modern tech aesthetic with gradients */
+/* Professional QR Generator Design System - Dark theme with green accents */
 
 @layer base {
   :root {
-    --background: 245 245 250;
-    --foreground: 218 19% 17%;
+    --background: 240 10% 95%;
+    --foreground: 240 10% 5%;
 
     --card: 0 0% 100%;
-    --card-foreground: 218 19% 17%;
+    --card-foreground: 240 10% 5%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 218 19% 17%;
+    --popover-foreground: 240 10% 5%;
 
-    --primary: 262 83% 58%;
+    --primary: 142 76% 36%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 267 100% 74%;
+    --primary-hover: 142 76% 32%;
 
-    --secondary: 245 13% 92%;
-    --secondary-foreground: 218 19% 17%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 245 13% 92%;
-    --muted-foreground: 218 8% 46%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 262 45% 96%;
-    --accent-foreground: 262 83% 58%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 245 13% 88%;
-    --input: 245 13% 88%;
-    --ring: 262 83% 58%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142 76% 36%;
 
-    /* Custom QR App Design Tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(267 100% 74%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(245 13% 98%));
-    --gradient-scanner: linear-gradient(135deg, hsl(267 100% 74%), hsl(238 83% 67%));
+    /* Dark panel for generator */
+    --dark-panel: 240 10% 8%;
+    --dark-panel-foreground: 240 5% 95%;
+    --dark-input: 240 5% 15%;
+    --dark-border: 240 5% 20%;
     
-    --shadow-card: 0 4px 6px -1px hsl(262 83% 58% / 0.1), 0 2px 4px -1px hsl(262 83% 58% / 0.06);
-    --shadow-button: 0 4px 14px 0 hsl(262 83% 58% / 0.25);
-    --shadow-scanner: 0 8px 32px 0 hsl(262 83% 58% / 0.15);
+    /* QR Code colors */
+    --qr-preview-bg: 0 0% 100%;
+    --qr-dark: 240 10% 5%;
     
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -67,51 +65,39 @@
   }
 
   .dark {
-    --background: 218 19% 11%;
-    --foreground: 245 13% 92%;
+    --background: 240 10% 5%;
+    --foreground: 240 5% 95%;
 
-    --card: 218 19% 14%;
-    --card-foreground: 245 13% 92%;
+    --card: 240 10% 8%;
+    --card-foreground: 240 5% 95%;
 
-    --popover: 218 19% 14%;
-    --popover-foreground: 245 13% 92%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 240 5% 95%;
 
-    --primary: 267 100% 74%;
-    --primary-foreground: 218 19% 11%;
-    --primary-glow: 262 83% 58%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 142 76% 40%;
 
-    --secondary: 218 19% 17%;
-    --secondary-foreground: 245 13% 92%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 240 5% 64.9%;
 
-    --muted: 218 19% 17%;
-    --muted-foreground: 218 8% 65%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 262 45% 15%;
-    --accent-foreground: 267 100% 74%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 240 5% 64.9%;
 
     --destructive: 0 62% 50%;
-    --destructive-foreground: 245 13% 92%;
+    --destructive-foreground: 240 5% 95%;
 
-    --border: 218 19% 22%;
-    --input: 218 19% 22%;
-    --ring: 267 100% 74%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142 76% 36%;
 
-    /* Dark mode gradients and shadows */
-    --gradient-primary: linear-gradient(135deg, hsl(267 100% 74%), hsl(238 83% 67%));
-    --gradient-card: linear-gradient(145deg, hsl(218 19% 14%), hsl(218 19% 17%));
-    --gradient-scanner: linear-gradient(135deg, hsl(267 100% 74%), hsl(262 83% 58%));
-    
-    --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
-    --shadow-button: 0 4px 14px 0 hsl(267 100% 74% / 0.3);
-    --shadow-scanner: 0 8px 32px 0 hsl(267 100% 74% / 0.2);
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --dark-panel: 240 10% 8%;
+    --dark-panel-foreground: 240 5% 95%;
+    --dark-input: 240 5% 15%;
+    --dark-border: 240 5% 20%;
   }
 }
 

@@ -179,7 +179,7 @@ export const QRScanner = () => {
           {!isScanning ? (
             <Button
               onClick={startScanning}
-              variant="scanner"
+              variant="default"
               size="lg"
               className="w-full"
             >
