@@ -1,13 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { 
   Link, 
-  FileText, 
   Grid3X3, 
   User, 
   MessageSquare, 
@@ -16,9 +14,7 @@ import {
   Phone,
   Download, 
   Copy, 
-  Printer, 
-  Upload,
-  X
+  Printer
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -58,9 +54,6 @@ interface WiFiData {
 export const ProfessionalQRGenerator = () => {
   const [selectedType, setSelectedType] = useState('url');
   const [qrCode, setQrCode] = useState('');
-  const [logo, setLogo] = useState<string | null>(null);
-  const [trackScans, setTrackScans] = useState(false);
-  const [removeWatermark, setRemoveWatermark] = useState(false);
   
   // Content states
   const [url, setUrl] = useState('');
@@ -83,12 +76,11 @@ export const ProfessionalQRGenerator = () => {
     security: 'WPA'
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     generateQR();
-  }, [selectedType, url, text, phone, email, smsText, contactData, wifiData, bitcoinAddress, logo]);
+  }, [selectedType, url, text, phone, email, smsText, contactData, wifiData, bitcoinAddress]);
 
   const getQRContent = () => {
     switch (selectedType) {
@@ -132,52 +124,30 @@ END:VCARD`;
       await QRCode.toCanvas(canvas, content, {
         width: 300,
         margin: 2,
-        errorCorrectionLevel: 'H', // High error correction for logo embedding
         color: {
           dark: '#000000',
           light: '#FFFFFF'
         }
       });
 
-      // Add logo if present
-      if (logo) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          const logoImg = new Image();
-          logoImg.onload = () => {
-            const logoSize = canvas.width * 0.15; // Smaller size to maintain QR functionality
-            const x = (canvas.width - logoSize) / 2;
-            const y = (canvas.height - logoSize) / 2;
-            
-            // Draw white circular background for logo
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2 + 3, 0, 2 * Math.PI);
-            ctx.fill();
-            
-            // Create circular clipping for logo
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2, 0, 2 * Math.PI);
-            ctx.clip();
-            
-            // Draw logo
-            ctx.drawImage(logoImg, x, y, logoSize, logoSize);
-            ctx.restore();
-            
-            setQrCode(canvas.toDataURL());
-          };
-          logoImg.src = logo;
-        }
-      } else {
-        setQrCode(canvas.toDataURL());
+      // Add watermark
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.font = '10px Arial';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.textAlign = 'center';
+        ctx.fillText('QRGenerator.com', canvas.width / 2, canvas.height - 5);
       }
 
-      // Save to history
+      const qrDataUrl = canvas.toDataURL();
+      setQrCode(qrDataUrl);
+
+      // Save to history with actual QR code
       const history = JSON.parse(localStorage.getItem('qr-history') || '[]');
       const newEntry = {
         id: Date.now(),
         text: content,
+        qrCode: qrDataUrl,
         type: 'generated',
         qrType: selectedType,
         timestamp: new Date().toISOString()
@@ -196,23 +166,6 @@ END:VCARD`;
     }
   };
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setLogo(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeLogo = () => {
-    setLogo(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const downloadQR = () => {
     if (!qrCode) return;
@@ -544,54 +497,6 @@ END:VCARD`;
                 {qrTypes.find(t => t.id === selectedType)?.label} QR Code
               </h3>
               {renderContentInput()}
-            </div>
-
-            {/* Logo Upload */}
-            <div className="mb-6">
-              <Label className="text-dark-panel-foreground mb-3 block">Add Logo (Optional)</Label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                />
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  variant="outline"
-                  size="sm"
-                  className="bg-dark-input border-dark-border text-dark-panel-foreground hover:bg-dark-border"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Logo
-                </Button>
-                {logo && (
-                  <div className="flex items-center gap-2">
-                    <img src={logo} alt="Logo" className="w-8 h-8 object-cover rounded" />
-                    <Button
-                      onClick={removeLogo}
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Options */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-dark-panel-foreground">Track your scans ⭐</span>
-                <Switch checked={trackScans} onCheckedChange={setTrackScans} />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-dark-panel-foreground">Remove watermark ⭐</span>
-                <Switch checked={removeWatermark} onCheckedChange={setRemoveWatermark} />
-              </div>
             </div>
           </div>
 

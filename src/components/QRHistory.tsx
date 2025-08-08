@@ -8,7 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 interface HistoryEntry {
   id: number;
   text: string;
+  qrCode?: string;
   type: 'generated' | 'scanned';
+  qrType?: string;
   timestamp: string;
 }
 
@@ -101,13 +103,20 @@ export const QRHistory = () => {
             key={entry.id}
             className="flex items-center justify-between p-3 bg-background rounded-lg border hover:shadow-sm transition-shadow"
           >
+            {entry.qrCode && (
+              <img 
+                src={entry.qrCode} 
+                alt="QR Code" 
+                className="w-12 h-12 object-contain border rounded mr-3 flex-shrink-0"
+              />
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <Badge 
                   variant={entry.type === 'generated' ? 'default' : 'secondary'}
                   className="text-xs"
                 >
-                  {entry.type === 'generated' ? 'Generated' : 'Scanned'}
+                  {entry.qrType?.toUpperCase() || (entry.type === 'generated' ? 'Generated' : 'Scanned')}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
                   {formatDate(entry.timestamp)}

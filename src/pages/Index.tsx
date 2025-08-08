@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfessionalQRGenerator } from '@/components/ProfessionalQRGenerator';
 import { QRScanner } from '@/components/QRScanner';
 import { QRHistory } from '@/components/QRHistory';
+import { FeatureSection } from '@/components/FeatureSection';
 import { QrCode, Camera, History } from 'lucide-react';
 
 const Index = () => {
@@ -53,6 +54,8 @@ const Index = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      <FeatureSection />
     </div>
   );
 };
