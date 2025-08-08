@@ -79,7 +79,8 @@ export const ProfessionalQRGenerator = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    generateQR();
+    // Clear QR code when inputs change
+    setQrCode('');
   }, [selectedType, url, text, phone, email, smsText, contactData, wifiData, bitcoinAddress]);
 
   const getQRContent = () => {
@@ -497,6 +498,18 @@ END:VCARD`;
                 {qrTypes.find(t => t.id === selectedType)?.label} QR Code
               </h3>
               {renderContentInput()}
+            </div>
+
+            {/* Generate Button */}
+            <div className="mb-6">
+              <Button
+                onClick={generateQR}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
+                disabled={!getQRContent().trim()}
+              >
+                <Grid3X3 className="h-5 w-5 mr-2" />
+                Generate QR Code
+              </Button>
             </div>
           </div>
 
