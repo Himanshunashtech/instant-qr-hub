@@ -31,14 +31,13 @@ interface QRType {
 
 const qrTypes: QRType[] = [
   { id: 'url', label: 'URL', icon: Link, color: 'text-green-500' },
-  { id: 'pdf', label: 'PDF', icon: FileText, color: 'text-red-500' },
-  { id: 'multi-url', label: 'Multi-URL', icon: Grid3X3, color: 'text-blue-500' },
-  { id: 'contact', label: 'Contact', icon: User, color: 'text-purple-500' },
+  { id: 'wifi', label: 'WiFi', icon: Smartphone, color: 'text-blue-500' },
   { id: 'text', label: 'Plain Text', icon: MessageSquare, color: 'text-gray-500' },
-  { id: 'app', label: 'App', icon: Smartphone, color: 'text-indigo-500' },
-  { id: 'sms', label: 'SMS', icon: MessageSquare, color: 'text-orange-500' },
+  { id: 'contact', label: 'Contact', icon: User, color: 'text-purple-500' },
   { id: 'email', label: 'Email', icon: Mail, color: 'text-cyan-500' },
   { id: 'phone', label: 'Phone', icon: Phone, color: 'text-emerald-500' },
+  { id: 'sms', label: 'SMS', icon: MessageSquare, color: 'text-orange-500' },
+  { id: 'bitcoin', label: 'Bitcoin', icon: Grid3X3, color: 'text-yellow-500' },
 ];
 
 interface ContactData {
@@ -48,6 +47,12 @@ interface ContactData {
   phone: string;
   email: string;
   url: string;
+}
+
+interface WiFiData {
+  ssid: string;
+  password: string;
+  security: 'WPA' | 'WEP' | 'nopass';
 }
 
 export const ProfessionalQRGenerator = () => {
@@ -63,6 +68,7 @@ export const ProfessionalQRGenerator = () => {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [smsText, setSmsText] = useState('');
+  const [bitcoinAddress, setBitcoinAddress] = useState('');
   const [contactData, setContactData] = useState<ContactData>({
     firstName: '',
     lastName: '',
@@ -71,13 +77,18 @@ export const ProfessionalQRGenerator = () => {
     email: '',
     url: ''
   });
+  const [wifiData, setWifiData] = useState<WiFiData>({
+    ssid: '',
+    password: '',
+    security: 'WPA'
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     generateQR();
-  }, [selectedType, url, text, phone, email, smsText, contactData, logo]);
+  }, [selectedType, url, text, phone, email, smsText, contactData, wifiData, bitcoinAddress, logo]);
 
   const getQRContent = () => {
     switch (selectedType) {
@@ -91,6 +102,10 @@ export const ProfessionalQRGenerator = () => {
         return `mailto:${email}`;
       case 'sms':
         return `sms:${phone}?body=${encodeURIComponent(smsText)}`;
+      case 'wifi':
+        return `WIFI:T:${wifiData.security};S:${wifiData.ssid};P:${wifiData.password};H:false;;`;
+      case 'bitcoin':
+        return `bitcoin:${bitcoinAddress}`;
       case 'contact':
         return `BEGIN:VCARD
 VERSION:3.0
@@ -117,6 +132,7 @@ END:VCARD`;
       await QRCode.toCanvas(canvas, content, {
         width: 300,
         margin: 2,
+        errorCorrectionLevel: 'H', // High error correction for logo embedding
         color: {
           dark: '#000000',
           light: '#FFFFFF'
@@ -129,16 +145,25 @@ END:VCARD`;
         if (ctx) {
           const logoImg = new Image();
           logoImg.onload = () => {
-            const logoSize = canvas.width * 0.2; // 20% of QR code size
+            const logoSize = canvas.width * 0.15; // Smaller size to maintain QR functionality
             const x = (canvas.width - logoSize) / 2;
             const y = (canvas.height - logoSize) / 2;
             
-            // Draw white background for logo
+            // Draw white circular background for logo
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(x - 5, y - 5, logoSize + 10, logoSize + 10);
+            ctx.beginPath();
+            ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2 + 3, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Create circular clipping for logo
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2, 0, 2 * Math.PI);
+            ctx.clip();
             
             // Draw logo
             ctx.drawImage(logoImg, x, y, logoSize, logoSize);
+            ctx.restore();
             
             setQrCode(canvas.toDataURL());
           };
@@ -330,6 +355,58 @@ END:VCARD`;
           </div>
         );
       
+      case 'wifi':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-dark-panel-foreground">Network Name (SSID)</Label>
+              <Input
+                placeholder="My WiFi Network"
+                value={wifiData.ssid}
+                onChange={(e) => setWifiData({...wifiData, ssid: e.target.value})}
+                className="bg-dark-input border-dark-border text-dark-panel-foreground"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-dark-panel-foreground">Password</Label>
+              <Input
+                type="password"
+                placeholder="WiFi Password"
+                value={wifiData.password}
+                onChange={(e) => setWifiData({...wifiData, password: e.target.value})}
+                className="bg-dark-input border-dark-border text-dark-panel-foreground"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-dark-panel-foreground">Security Type</Label>
+              <select
+                value={wifiData.security}
+                onChange={(e) => setWifiData({...wifiData, security: e.target.value as 'WPA' | 'WEP' | 'nopass'})}
+                className="w-full p-2 rounded-md bg-dark-input border-dark-border text-dark-panel-foreground"
+              >
+                <option value="WPA">WPA/WPA2</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">No Password</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      case 'bitcoin':
+        return (
+          <div className="space-y-2">
+            <Label htmlFor="bitcoin" className="text-dark-panel-foreground">Bitcoin Wallet Address</Label>
+            <Input
+              id="bitcoin"
+              placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+              value={bitcoinAddress}
+              onChange={(e) => setBitcoinAddress(e.target.value)}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+            <p className="text-xs text-muted-foreground">Enter a valid Bitcoin wallet address</p>
+          </div>
+        );
+
       case 'contact':
         return (
           <div className="space-y-4">
@@ -407,13 +484,34 @@ END:VCARD`;
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            The QR Code Generator – Create free QR Codes instantly
+        <div className="text-center mb-12">
+          <div className="mb-6">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent mb-4">
+              QR Code Generator
+            </h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary-glow mx-auto rounded-full mb-6"></div>
+          </div>
+          <h2 className="text-2xl font-semibold text-foreground mb-4">
+            Create Professional QR Codes in Seconds
           </h2>
-          <p className="text-muted-foreground max-w-4xl mx-auto">
-            Quickly generate either a static or a dynamic QR Code, tailored for your specific use—such as linking to a website, contact details, or a digital menu. No fine print, no surprises—just a straightforward tool built for professionals who need efficiency.
+          <p className="text-muted-foreground max-w-3xl mx-auto text-lg leading-relaxed">
+            Generate QR codes for WiFi networks, Bitcoin wallets, contact cards, URLs, and more. 
+            Add your logo, customize colors, and download instantly. No sign-up required.
           </p>
+          <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span>Instant Generation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <span>Logo Embedding</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+              <span>Multiple Formats</span>
+            </div>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
