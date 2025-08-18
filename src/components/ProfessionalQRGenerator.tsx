@@ -38,11 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 interface QRDesignOptions {
   foregroundColor: string;
   backgroundColor: string;
-  useGradient: boolean;
-  gradientColor1: string;
-  gradientColor2: string;
   dotStyle: 'square' | 'round' | 'dots';
-  transparentBackground: boolean;
 }
 
 interface QRType {
@@ -174,11 +170,7 @@ export const ProfessionalQRGenerator = () => {
   const [designOptions, setDesignOptions] = useState<QRDesignOptions>({
     foregroundColor: '#000000',
     backgroundColor: '#FFFFFF',
-    useGradient: false,
-    gradientColor1: '#000000',
-    gradientColor2: '#333333',
-    dotStyle: 'square',
-    transparentBackground: false
+    dotStyle: 'square'
   });
 
   // Advanced features
@@ -268,45 +260,19 @@ END:VCARD`;
         width: 300,
         margin: 2,
         color: {
-          dark: designOptions.useGradient ? designOptions.gradientColor1 : designOptions.foregroundColor,
-          light: designOptions.transparentBackground ? 'rgba(0,0,0,0)' : designOptions.backgroundColor
+          dark: designOptions.foregroundColor,
+          light: designOptions.backgroundColor
         },
         errorCorrectionLevel: 'H' // High error correction for logo embedding
       });
 
-      const ctx = canvas.getContext('2d');
-      if (ctx && designOptions.useGradient && !designOptions.transparentBackground) {
-        // Apply gradient effect
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, designOptions.gradientColor1);
-        gradient.addColorStop(1, designOptions.gradientColor2);
-        
-        // This is a simplified gradient application - in a real implementation you'd want more sophisticated gradient mapping
-        for (let i = 0; i < data.length; i += 4) {
-          if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0) { // Black pixels
-            const y = Math.floor((i / 4) / canvas.width);
-            const ratio = y / canvas.height;
-            const r = parseInt(designOptions.gradientColor1.substr(1, 2), 16) * (1 - ratio) + parseInt(designOptions.gradientColor2.substr(1, 2), 16) * ratio;
-            const g = parseInt(designOptions.gradientColor1.substr(3, 2), 16) * (1 - ratio) + parseInt(designOptions.gradientColor2.substr(3, 2), 16) * ratio;
-            const b = parseInt(designOptions.gradientColor1.substr(5, 2), 16) * (1 - ratio) + parseInt(designOptions.gradientColor2.substr(5, 2), 16) * ratio;
-            
-            data[i] = r;
-            data[i + 1] = g;
-            data[i + 2] = b;
-          }
-        }
-        ctx.putImageData(imageData, 0, 0);
-      }
-
       // Add watermark
+      const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.font = '10px Arial';
         ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         ctx.textAlign = 'center';
-        ctx.fillText('QRGenerator.com', canvas.width / 2, canvas.height - 5);
+        ctx.fillText('QRJI.com', canvas.width / 2, canvas.height - 5);
       }
 
       const qrDataUrl = canvas.toDataURL();
@@ -378,7 +344,7 @@ END:VCARD`;
             margin: 2,
             color: {
               dark: designOptions.foregroundColor,
-              light: designOptions.transparentBackground ? 'rgba(0,0,0,0)' : designOptions.backgroundColor
+              light: designOptions.backgroundColor
             }
           });
           qrCodes.push(canvas.toDataURL());
@@ -1053,54 +1019,21 @@ END:VCARD`;
                         value={designOptions.backgroundColor}
                         onChange={(e) => setDesignOptions({...designOptions, backgroundColor: e.target.value})}
                         className="h-10 w-full"
-                        disabled={designOptions.transparentBackground}
                       />
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="gradient"
-                      checked={designOptions.useGradient}
-                      onChange={(e) => setDesignOptions({...designOptions, useGradient: e.target.checked})}
-                      className="rounded"
-                    />
-                    <Label htmlFor="gradient" className="text-dark-panel-foreground">Use Gradient</Label>
-                  </div>
-                  
-                  {designOptions.useGradient && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-dark-panel-foreground">Gradient Color 1</Label>
-                        <Input
-                          type="color"
-                          value={designOptions.gradientColor1}
-                          onChange={(e) => setDesignOptions({...designOptions, gradientColor1: e.target.value})}
-                          className="h-10 w-full"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-dark-panel-foreground">Gradient Color 2</Label>
-                        <Input
-                          type="color"
-                          value={designOptions.gradientColor2}
-                          onChange={(e) => setDesignOptions({...designOptions, gradientColor2: e.target.value})}
-                          className="h-10 w-full"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="transparent"
-                      checked={designOptions.transparentBackground}
-                      onChange={(e) => setDesignOptions({...designOptions, transparentBackground: e.target.checked})}
-                      className="rounded"
-                    />
-                    <Label htmlFor="transparent" className="text-dark-panel-foreground">Transparent Background</Label>
+                  <div className="space-y-2">
+                    <Label className="text-dark-panel-foreground">Dot Style</Label>
+                    <select
+                      value={designOptions.dotStyle}
+                      onChange={(e) => setDesignOptions({...designOptions, dotStyle: e.target.value as 'square' | 'round' | 'dots'})}
+                      className="w-full p-2 rounded-md bg-dark-input border-dark-border text-dark-panel-foreground"
+                    >
+                      <option value="square">Square</option>
+                      <option value="round">Round</option>
+                      <option value="dots">Dots</option>
+                    </select>
                   </div>
                 </div>
               )}
