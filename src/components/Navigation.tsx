@@ -25,16 +25,11 @@ export const Navigation = () => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
-                    Generator
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-sm font-medium">
                     Features
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                    <ul className="grid gap-3 p-4 w-[300px] md:w-[350px] md:grid-cols-[.75fr_1fr]">
                       <li className="row-span-3">
                         <NavigationMenuLink asChild>
                           <a
@@ -83,11 +78,6 @@ export const Navigation = () => {
                       </li>
                     </ul>
                   </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/privacy" className="text-sm font-medium hover:text-primary transition-colors">
-                    Privacy
-                  </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <Link to="/terms" className="text-sm font-medium hover:text-primary transition-colors">
