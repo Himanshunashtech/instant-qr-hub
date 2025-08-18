@@ -1,6 +1,6 @@
 {
-  "name": "QR Code Generator Pro",
-  "short_name": "QR Generator",
+  "name": "qrji",
+  "short_name": "qrji",
   "description": "Professional QR Code Generator with advanced features",
   "start_url": "/",
   "display": "standalone",

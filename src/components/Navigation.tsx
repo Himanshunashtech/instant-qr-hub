@@ -18,7 +18,7 @@ export const Navigation = () => {
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <QrCode className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">QRJI</span>
+            <span className="font-bold text-xl">qrji</span>
           </Link>
           
           <div className="hidden md:flex items-center space-x-6">
