@@ -80,6 +80,45 @@ export const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-sm font-medium">
+                    QR Types
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid gap-3 p-4 w-[300px]">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/wifi-qr" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">WiFi QR Codes</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Share WiFi credentials instantly and securely.
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/bitcoin-qr" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">Bitcoin QR Codes</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Accept Bitcoin payments with QR codes.
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/youtube-qr" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">YouTube QR Codes</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Promote videos and boost channel growth.
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
                   <Link to="/terms" className="text-sm font-medium hover:text-primary transition-colors">
                     Terms
                   </Link>

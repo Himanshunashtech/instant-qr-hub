@@ -4,6 +4,7 @@ import { ProfessionalQRGenerator } from '@/components/ProfessionalQRGenerator';
 import { QRScanner } from '@/components/QRScanner';
 import { QRHistory } from '@/components/QRHistory';
 import { FeatureSection } from '@/components/FeatureSection';
+import { ContentSection } from '@/components/ContentSection';
 import { QrCode, Camera, History } from 'lucide-react';
 
 const Index = () => {
@@ -55,6 +56,7 @@ const Index = () => {
         </TabsContent>
       </Tabs>
       
+      <ContentSection />
       <FeatureSection />
     </div>
   );

@@ -7,6 +7,9 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { TermsOfService } from "./pages/TermsOfService";
+import { WiFiQR } from "./pages/WiFiQR";
+import { BitcoinQR } from "./pages/BitcoinQR";
+import { YouTubeQR } from "./pages/YouTubeQR";
 import { Navigation } from "./components/Navigation";
 import { Footer } from "./components/Footer";
 
@@ -23,6 +26,9 @@ const App = () => (
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/wifi-qr" element={<WiFiQR />} />
+              <Route path="/bitcoin-qr" element={<BitcoinQR />} />
+              <Route path="/youtube-qr" element={<YouTubeQR />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="*" element={<NotFound />} />
