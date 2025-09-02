@@ -11,6 +11,9 @@ import { WiFiQR } from "./pages/WiFiQR";
 import { BitcoinQR } from "./pages/BitcoinQR";
 import { YouTubeQR } from "./pages/YouTubeQR";
 import { Footer } from "./components/Footer";
+import { ContactUs } from "./pages/ContactUs";
+import { PrivacyQuestions } from "./pages/PrivacyQuestions";
+import { Disclaimer } from "./pages/Disclaimer";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ const App = () => (
               <Route path="/youtube-qr" element={<YouTubeQR />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/privacy-questions" element={<PrivacyQuestions />} />
+              <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
