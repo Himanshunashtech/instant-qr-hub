@@ -10,7 +10,6 @@ import { TermsOfService } from "./pages/TermsOfService";
 import { WiFiQR } from "./pages/WiFiQR";
 import { BitcoinQR } from "./pages/BitcoinQR";
 import { YouTubeQR } from "./pages/YouTubeQR";
-import { Navigation } from "./components/Navigation";
 import { Footer } from "./components/Footer";
 
 const queryClient = new QueryClient();
@@ -22,7 +21,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <div className="min-h-screen flex flex-col">
-          <Navigation />
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Index />} />

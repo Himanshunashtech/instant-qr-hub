@@ -39,6 +39,8 @@ interface QRDesignOptions {
   foregroundColor: string;
   backgroundColor: string;
   dotStyle: 'square' | 'round' | 'dots';
+  cornerStyle: 'square' | 'round' | 'extra-round';
+  logoStyle: 'none' | 'circle' | 'square';
 }
 
 interface QRType {
@@ -170,7 +172,9 @@ export const ProfessionalQRGenerator = () => {
   const [designOptions, setDesignOptions] = useState<QRDesignOptions>({
     foregroundColor: '#000000',
     backgroundColor: '#FFFFFF',
-    dotStyle: 'square'
+    dotStyle: 'square',
+    cornerStyle: 'square',
+    logoStyle: 'none'
   });
 
   // Advanced features
@@ -1023,16 +1027,43 @@ END:VCARD`;
                     </div>
                   </div>
                   
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-dark-panel-foreground">Dot Style</Label>
+                      <select
+                        value={designOptions.dotStyle}
+                        onChange={(e) => setDesignOptions({...designOptions, dotStyle: e.target.value as 'square' | 'round' | 'dots'})}
+                        className="w-full p-2 rounded-md bg-dark-input border-dark-border text-dark-panel-foreground"
+                      >
+                        <option value="square">Square Dots</option>
+                        <option value="round">Round Dots</option>
+                        <option value="dots">Small Dots</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-dark-panel-foreground">Corner Style</Label>
+                      <select
+                        value={designOptions.cornerStyle}
+                        onChange={(e) => setDesignOptions({...designOptions, cornerStyle: e.target.value as 'square' | 'round' | 'extra-round'})}
+                        className="w-full p-2 rounded-md bg-dark-input border-dark-border text-dark-panel-foreground"
+                      >
+                        <option value="square">Square Corners</option>
+                        <option value="round">Rounded Corners</option>
+                        <option value="extra-round">Extra Rounded</option>
+                      </select>
+                    </div>
+                  </div>
+                  
                   <div className="space-y-2">
-                    <Label className="text-dark-panel-foreground">Dot Style</Label>
+                    <Label className="text-dark-panel-foreground">Logo Style</Label>
                     <select
-                      value={designOptions.dotStyle}
-                      onChange={(e) => setDesignOptions({...designOptions, dotStyle: e.target.value as 'square' | 'round' | 'dots'})}
+                      value={designOptions.logoStyle}
+                      onChange={(e) => setDesignOptions({...designOptions, logoStyle: e.target.value as 'none' | 'circle' | 'square'})}
                       className="w-full p-2 rounded-md bg-dark-input border-dark-border text-dark-panel-foreground"
                     >
-                      <option value="square">Square</option>
-                      <option value="round">Round</option>
-                      <option value="dots">Dots</option>
+                      <option value="none">No Logo</option>
+                      <option value="circle">Circle Logo Area</option>
+                      <option value="square">Square Logo Area</option>
                     </select>
                   </div>
                 </div>
