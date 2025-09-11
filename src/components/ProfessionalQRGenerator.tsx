@@ -278,17 +278,13 @@ END:VCARD`;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Apply custom dot styles
+      // Only apply custom styling if it won't break scannability
+      // Apply dot styling (preserving corner patterns)
       if (designOptions.dotStyle !== 'square') {
-        await applyCustomDotStyle(ctx, canvas, designOptions.dotStyle);
+        await applyDotStyling(ctx, canvas);
       }
 
-      // Apply custom corner styles
-      if (designOptions.cornerStyle !== 'square') {
-        await applyCustomCornerStyle(ctx, canvas, designOptions.cornerStyle);
-      }
-
-      // Embed logo if provided
+      // Embed logo if provided (only in the center safe area)
       if (designOptions.logoFile && designOptions.logoStyle !== 'none') {
         await embedLogo(ctx, canvas, designOptions.logoFile, designOptions.logoStyle);
       }
@@ -327,103 +323,64 @@ END:VCARD`;
     }
   };
 
-  // Apply custom dot styles to QR code
-  const applyCustomDotStyle = async (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, dotStyle: string) => {
+  // Apply dot styling while preserving QR structure
+  const applyDotStyling = async (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
     
-    // Create a new canvas for the styled version
-    const styledCanvas = document.createElement('canvas');
-    styledCanvas.width = canvas.width;
-    styledCanvas.height = canvas.height;
-    const styledCtx = styledCanvas.getContext('2d');
-    if (!styledCtx) return;
+    // Get QR module size by analyzing the pattern
+    const moduleSize = Math.floor((canvas.width - 40) / 25); // Approximate module size
+    const margin = 20;
     
-    // Fill background
-    styledCtx.fillStyle = designOptions.backgroundColor;
-    styledCtx.fillRect(0, 0, canvas.width, canvas.height);
-    styledCtx.fillStyle = designOptions.foregroundColor;
-    
-    const moduleSize = 4; // Approximate module size
-    
-    for (let y = 0; y < canvas.height; y += moduleSize) {
-      for (let x = 0; x < canvas.width; x += moduleSize) {
+    // Only modify data modules, preserve finder patterns and timing patterns
+    for (let row = 0; row < 25; row++) {
+      for (let col = 0; col < 25; col++) {
+        // Skip finder patterns (corners) and timing patterns
+        if (isFinderPattern(row, col) || isTimingPattern(row, col)) {
+          continue;
+        }
+        
+        const x = margin + col * moduleSize;
+        const y = margin + row * moduleSize;
         const pixelIndex = (y * canvas.width + x) * 4;
-        const isDark = data[pixelIndex] < 128; // Check if pixel is dark
+        const isDark = data[pixelIndex] < 128;
         
         if (isDark) {
-          if (dotStyle === 'round') {
-            styledCtx.beginPath();
-            styledCtx.arc(x + moduleSize/2, y + moduleSize/2, moduleSize/2, 0, 2 * Math.PI);
-            styledCtx.fill();
-          } else if (dotStyle === 'dots') {
-            const dotSize = moduleSize * 0.8;
-            styledCtx.beginPath();
-            styledCtx.arc(x + moduleSize/2, y + moduleSize/2, dotSize/2, 0, 2 * Math.PI);
-            styledCtx.fill();
+          // Clear the square module
+          ctx.fillStyle = designOptions.backgroundColor;
+          ctx.fillRect(x, y, moduleSize, moduleSize);
+          
+          // Draw styled module
+          ctx.fillStyle = designOptions.foregroundColor;
+          if (designOptions.dotStyle === 'round') {
+            ctx.beginPath();
+            ctx.arc(x + moduleSize/2, y + moduleSize/2, moduleSize/2 * 0.9, 0, 2 * Math.PI);
+            ctx.fill();
+          } else if (designOptions.dotStyle === 'dots') {
+            ctx.beginPath();
+            ctx.arc(x + moduleSize/2, y + moduleSize/2, moduleSize/2 * 0.7, 0, 2 * Math.PI);
+            ctx.fill();
           }
         }
       }
     }
-    
-    // Copy styled version back to original canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(styledCanvas, 0, 0);
   };
 
-  // Apply custom corner styles
-  const applyCustomCornerStyle = async (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, cornerStyle: string) => {
-    const cornerSize = 60; // Size of corner squares
-    const positions = [
-      { x: 20, y: 20 }, // Top-left
-      { x: canvas.width - cornerSize - 20, y: 20 }, // Top-right
-      { x: 20, y: canvas.height - cornerSize - 20 } // Bottom-left
-    ];
-    
-    positions.forEach(pos => {
-      // Clear the corner area
-      ctx.fillStyle = designOptions.backgroundColor;
-      ctx.fillRect(pos.x, pos.y, cornerSize, cornerSize);
-      
-      // Draw outer frame
-      ctx.fillStyle = designOptions.foregroundColor;
-      if (cornerStyle === 'rounded') {
-        ctx.beginPath();
-        ctx.roundRect(pos.x, pos.y, cornerSize, cornerSize, 8);
-        ctx.fill();
-        ctx.fillStyle = designOptions.backgroundColor;
-        ctx.beginPath();
-        ctx.roundRect(pos.x + 8, pos.y + 8, cornerSize - 16, cornerSize - 16, 4);
-        ctx.fill();
-      } else if (cornerStyle === 'extra-round') {
-        ctx.beginPath();
-        ctx.roundRect(pos.x, pos.y, cornerSize, cornerSize, 15);
-        ctx.fill();
-        ctx.fillStyle = designOptions.backgroundColor;
-        ctx.beginPath();
-        ctx.roundRect(pos.x + 8, pos.y + 8, cornerSize - 16, cornerSize - 16, 8);
-        ctx.fill();
-      }
-      
-      // Draw inner dot
-      ctx.fillStyle = designOptions.foregroundColor;
-      const innerSize = cornerSize * 0.4;
-      const innerX = pos.x + (cornerSize - innerSize) / 2;
-      const innerY = pos.y + (cornerSize - innerSize) / 2;
-      
-      if (cornerStyle === 'rounded') {
-        ctx.beginPath();
-        ctx.roundRect(innerX, innerY, innerSize, innerSize, 4);
-        ctx.fill();
-      } else if (cornerStyle === 'extra-round') {
-        ctx.beginPath();
-        ctx.arc(innerX + innerSize/2, innerY + innerSize/2, innerSize/2, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-    });
+  // Check if position is a finder pattern (corner squares)
+  const isFinderPattern = (row: number, col: number): boolean => {
+    return (
+      (row < 9 && col < 9) || // Top-left
+      (row < 9 && col > 15) || // Top-right
+      (row > 15 && col < 9)    // Bottom-left
+    );
   };
 
-  // Embed logo in the center of QR code
+  // Check if position is a timing pattern
+  const isTimingPattern = (row: number, col: number): boolean => {
+    return row === 6 || col === 6;
+  };
+
+  // Embed logo in the center of QR code (safe area only)
   const embedLogo = async (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, logoFile: File, logoStyle: string) => {
     return new Promise<void>((resolve) => {
       const img = new Image();
@@ -431,12 +388,13 @@ END:VCARD`;
       
       reader.onload = (e) => {
         img.onload = () => {
-          const logoSize = canvas.width * 0.2; // Logo takes 20% of QR code
+          // Use smaller logo size to ensure scannability
+          const logoSize = canvas.width * 0.15; // Logo takes 15% of QR code (safer)
           const x = (canvas.width - logoSize) / 2;
           const y = (canvas.height - logoSize) / 2;
           
-          // Clear area for logo with some padding
-          const clearSize = logoSize * 1.2;
+          // Clear area for logo with minimal padding
+          const clearSize = logoSize * 1.1;
           const clearX = (canvas.width - clearSize) / 2;
           const clearY = (canvas.height - clearSize) / 2;
           
