@@ -41,6 +41,7 @@ interface QRDesignOptions {
   dotStyle: 'square' | 'round' | 'dots';
   cornerStyle: 'square' | 'round' | 'extra-round';
   logoStyle: 'none' | 'circle' | 'square';
+  logoFile: File | null;
 }
 
 interface QRType {
@@ -174,7 +175,8 @@ export const ProfessionalQRGenerator = () => {
     backgroundColor: '#FFFFFF',
     dotStyle: 'square',
     cornerStyle: 'square',
-    logoStyle: 'none'
+    logoStyle: 'none',
+    logoFile: null
   });
 
   // Advanced features
@@ -258,10 +260,13 @@ END:VCARD`;
 
     try {
       const canvas = document.createElement('canvas');
+      const size = 300;
+      canvas.width = size;
+      canvas.height = size;
       
-      // Advanced QR generation with custom styling
+      // Generate base QR code with high error correction for logo embedding
       await QRCode.toCanvas(canvas, content, {
-        width: 300,
+        width: size,
         margin: 2,
         color: {
           dark: designOptions.foregroundColor,
@@ -270,14 +275,29 @@ END:VCARD`;
         errorCorrectionLevel: 'H' // High error correction for logo embedding
       });
 
-      // Add watermark
       const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.font = '10px Arial';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.textAlign = 'center';
-        ctx.fillText('QRJI.com', canvas.width / 2, canvas.height - 5);
+      if (!ctx) return;
+
+      // Apply custom dot styles
+      if (designOptions.dotStyle !== 'square') {
+        await applyCustomDotStyle(ctx, canvas, designOptions.dotStyle);
       }
+
+      // Apply custom corner styles
+      if (designOptions.cornerStyle !== 'square') {
+        await applyCustomCornerStyle(ctx, canvas, designOptions.cornerStyle);
+      }
+
+      // Embed logo if provided
+      if (designOptions.logoFile && designOptions.logoStyle !== 'none') {
+        await embedLogo(ctx, canvas, designOptions.logoFile, designOptions.logoStyle);
+      }
+
+      // Add watermark
+      ctx.font = '10px Arial';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText('QRJI.com', canvas.width / 2, canvas.height - 5);
 
       const qrDataUrl = canvas.toDataURL();
       setQrCode(qrDataUrl);
@@ -305,6 +325,148 @@ END:VCARD`;
         variant: "destructive"
       });
     }
+  };
+
+  // Apply custom dot styles to QR code
+  const applyCustomDotStyle = async (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, dotStyle: string) => {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    // Create a new canvas for the styled version
+    const styledCanvas = document.createElement('canvas');
+    styledCanvas.width = canvas.width;
+    styledCanvas.height = canvas.height;
+    const styledCtx = styledCanvas.getContext('2d');
+    if (!styledCtx) return;
+    
+    // Fill background
+    styledCtx.fillStyle = designOptions.backgroundColor;
+    styledCtx.fillRect(0, 0, canvas.width, canvas.height);
+    styledCtx.fillStyle = designOptions.foregroundColor;
+    
+    const moduleSize = 4; // Approximate module size
+    
+    for (let y = 0; y < canvas.height; y += moduleSize) {
+      for (let x = 0; x < canvas.width; x += moduleSize) {
+        const pixelIndex = (y * canvas.width + x) * 4;
+        const isDark = data[pixelIndex] < 128; // Check if pixel is dark
+        
+        if (isDark) {
+          if (dotStyle === 'round') {
+            styledCtx.beginPath();
+            styledCtx.arc(x + moduleSize/2, y + moduleSize/2, moduleSize/2, 0, 2 * Math.PI);
+            styledCtx.fill();
+          } else if (dotStyle === 'dots') {
+            const dotSize = moduleSize * 0.8;
+            styledCtx.beginPath();
+            styledCtx.arc(x + moduleSize/2, y + moduleSize/2, dotSize/2, 0, 2 * Math.PI);
+            styledCtx.fill();
+          }
+        }
+      }
+    }
+    
+    // Copy styled version back to original canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(styledCanvas, 0, 0);
+  };
+
+  // Apply custom corner styles
+  const applyCustomCornerStyle = async (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, cornerStyle: string) => {
+    const cornerSize = 60; // Size of corner squares
+    const positions = [
+      { x: 20, y: 20 }, // Top-left
+      { x: canvas.width - cornerSize - 20, y: 20 }, // Top-right
+      { x: 20, y: canvas.height - cornerSize - 20 } // Bottom-left
+    ];
+    
+    positions.forEach(pos => {
+      // Clear the corner area
+      ctx.fillStyle = designOptions.backgroundColor;
+      ctx.fillRect(pos.x, pos.y, cornerSize, cornerSize);
+      
+      // Draw outer frame
+      ctx.fillStyle = designOptions.foregroundColor;
+      if (cornerStyle === 'rounded') {
+        ctx.beginPath();
+        ctx.roundRect(pos.x, pos.y, cornerSize, cornerSize, 8);
+        ctx.fill();
+        ctx.fillStyle = designOptions.backgroundColor;
+        ctx.beginPath();
+        ctx.roundRect(pos.x + 8, pos.y + 8, cornerSize - 16, cornerSize - 16, 4);
+        ctx.fill();
+      } else if (cornerStyle === 'extra-round') {
+        ctx.beginPath();
+        ctx.roundRect(pos.x, pos.y, cornerSize, cornerSize, 15);
+        ctx.fill();
+        ctx.fillStyle = designOptions.backgroundColor;
+        ctx.beginPath();
+        ctx.roundRect(pos.x + 8, pos.y + 8, cornerSize - 16, cornerSize - 16, 8);
+        ctx.fill();
+      }
+      
+      // Draw inner dot
+      ctx.fillStyle = designOptions.foregroundColor;
+      const innerSize = cornerSize * 0.4;
+      const innerX = pos.x + (cornerSize - innerSize) / 2;
+      const innerY = pos.y + (cornerSize - innerSize) / 2;
+      
+      if (cornerStyle === 'rounded') {
+        ctx.beginPath();
+        ctx.roundRect(innerX, innerY, innerSize, innerSize, 4);
+        ctx.fill();
+      } else if (cornerStyle === 'extra-round') {
+        ctx.beginPath();
+        ctx.arc(innerX + innerSize/2, innerY + innerSize/2, innerSize/2, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    });
+  };
+
+  // Embed logo in the center of QR code
+  const embedLogo = async (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, logoFile: File, logoStyle: string) => {
+    return new Promise<void>((resolve) => {
+      const img = new Image();
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        img.onload = () => {
+          const logoSize = canvas.width * 0.2; // Logo takes 20% of QR code
+          const x = (canvas.width - logoSize) / 2;
+          const y = (canvas.height - logoSize) / 2;
+          
+          // Clear area for logo with some padding
+          const clearSize = logoSize * 1.2;
+          const clearX = (canvas.width - clearSize) / 2;
+          const clearY = (canvas.height - clearSize) / 2;
+          
+          ctx.fillStyle = designOptions.backgroundColor;
+          if (logoStyle === 'circle') {
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, clearSize / 2, 0, 2 * Math.PI);
+            ctx.fill();
+          } else {
+            ctx.fillRect(clearX, clearY, clearSize, clearSize);
+          }
+          
+          // Draw logo
+          ctx.save();
+          if (logoStyle === 'circle') {
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, logoSize / 2, 0, 2 * Math.PI);
+            ctx.clip();
+          }
+          
+          ctx.drawImage(img, x, y, logoSize, logoSize);
+          ctx.restore();
+          
+          resolve();
+        };
+        img.src = e.target?.result as string;
+      };
+      
+      reader.readAsDataURL(logoFile);
+    });
   };
 
   const shareToSocial = (platform: string) => {
@@ -1066,6 +1228,29 @@ END:VCARD`;
                       <option value="square">Square Logo Area</option>
                     </select>
                   </div>
+                  
+                  {designOptions.logoStyle !== 'none' && (
+                    <div className="space-y-2">
+                      <Label className="text-dark-panel-foreground">Upload Logo</Label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setDesignOptions({...designOptions, logoFile: file});
+                        }}
+                        className="bg-dark-input border-dark-border text-dark-panel-foreground file:bg-primary file:text-primary-foreground file:border-0 file:rounded-md file:px-3 file:py-1 file:mr-3"
+                      />
+                      {designOptions.logoFile && (
+                        <p className="text-xs text-muted-foreground">
+                          Selected: {designOptions.logoFile.name}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Upload a logo to embed in the center of your QR code. Works best with square images.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
