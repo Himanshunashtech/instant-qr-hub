@@ -15,7 +15,7 @@ import { Contact } from "./pages/contact";
 import { ContactUs } from "./pages/ContactUs";
 import { PrivacyQuestions } from "./pages/PrivacyQuestions";
 import { Disclaimer } from "./pages/disclaimer";
-
+import { Navigation } from "./components/Navigation";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +27,7 @@ const App = () => (
       <BrowserRouter>
         <div className="min-h-screen flex flex-col">
           <main className="flex-1">
+            <Navigation />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path ="/disclaimer" element={<Disclaimer/>}/>
