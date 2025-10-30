@@ -21,7 +21,7 @@ export const Navigation = () => {
             <span className="font-bold text-xl">qrji</span>
           </Link>
           
-          <div className="hidden md:flex items-center space-x-6">
+          {/* <div className="hidden md:flex items-center space-x-6">
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
@@ -125,11 +125,11 @@ export const Navigation = () => {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
-          </div>
+          </div> */}
           
-          <Button variant="ghost" size="sm" className="md:hidden">
+          {/* <Button variant="ghost" size="sm" className="md:hidden">
             <Menu className="h-5 w-5" />
-          </Button>
+          </Button> */}
         </div>
       </div>
     </nav>
