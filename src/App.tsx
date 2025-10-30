@@ -7,21 +7,15 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { TermsOfService } from "./pages/TermsOfService";
-<<<<<<< HEAD
 
-import { Navigation } from "./components/Navigation";
+
 import { Footer } from "./components/Footer";
 import { Contact } from "./pages/contact";
-import { Disclaimer } from "./pages/disclaimer";
-=======
-import { WiFiQR } from "./pages/WiFiQR";
-import { BitcoinQR } from "./pages/BitcoinQR";
-import { YouTubeQR } from "./pages/YouTubeQR";
-import { Footer } from "./components/Footer";
+
 import { ContactUs } from "./pages/ContactUs";
 import { PrivacyQuestions } from "./pages/PrivacyQuestions";
-import { Disclaimer } from "./pages/Disclaimer";
->>>>>>> 2950ab19ae324f2ddb372a792ccab123056d4f97
+import { Disclaimer } from "./pages/disclaimer";
+
 
 const queryClient = new QueryClient();
 
@@ -41,7 +35,6 @@ const App = () => (
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/contact" element={<ContactUs />} />
               <Route path="/privacy-questions" element={<PrivacyQuestions />} />
-              <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
