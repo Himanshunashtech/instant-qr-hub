@@ -14,7 +14,7 @@ import { Contact } from "./pages/contact";
 
 import { ContactUs } from "./pages/ContactUs";
 import { PrivacyQuestions } from "./pages/PrivacyQuestions";
-import { Disclaimer } from "./pages/disclaimer";
+import { Disclaimer } from "./pages/Disclaimer";
 import { Navigation } from "./components/Navigation";
 
 const queryClient = new QueryClient();
