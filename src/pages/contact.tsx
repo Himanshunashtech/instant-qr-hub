@@ -30,6 +30,26 @@ export const Contact = () => {
                   <p className="text-gray-600">Remote Team</p>
                 </div>
               </div>
+
+              {/* Google Map Section */}
+              <div className="mt-8">
+                <h3 className="font-medium text-gray-700 mb-4">Our Location</h3>
+                <div className="aspect-video w-full rounded-lg overflow-hidden border border-gray-300">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14023.77184518037!2d77.386127!3d28.511749!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce65f55555555%3A0x289b43e88126788!2sSector%20142%2C%20Noida%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1689694242671!5m2!1sen!2sin"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={true}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Map of Sector 142, Noida"
+                  />
+                </div>
+                <p className="text-gray-600 text-sm mt-2">
+                  Sector 142, Noida, Uttar Pradesh, India
+                </p>
+              </div>
             </div>
 
             <div>

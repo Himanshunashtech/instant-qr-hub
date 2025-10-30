@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Shield, Info, Zap, Globe, FileText, Users, Clock } from 'lucide-react';
+import { AlertTriangle, Shield, Info, Zap, Globe, FileText, Users, Clock, MapPin } from 'lucide-react';
 
 export const Disclaimer = () => {
   return (
@@ -31,6 +31,37 @@ export const Disclaimer = () => {
           </AlertDescription>
         </Alert>
 
+        {/* Company Information */}
+        <Card className="mb-8 bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-6 w-6 text-blue-600" />
+              Company Information
+            </CardTitle>
+            <CardDescription>
+              SCS Sharma Consultant Services - Registered Indian Company
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <h4 className="font-semibold mb-2">Registered Company</h4>
+                <p className="text-muted-foreground">
+                  SCS Sharma Consultant Services<br />
+                  (Registered under Indian Companies Act)
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Operating Brand</h4>
+                <p className="text-muted-foreground">
+                  QRJI - QR Code Generation Platform<br />
+                  A product of SCS Sharma Consultant Services
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* General Disclaimer */}
         <Card className="mb-8">
           <CardHeader>
@@ -46,7 +77,7 @@ export const Disclaimer = () => {
             <div className="prose prose-sm max-w-none space-y-4">
               <h3>Service Availability and Reliability</h3>
               <p>
-                QRJI provides QR code generation services on an "as is" and "as available" basis. While we strive 
+                QRJI (operated by SCS Sharma Consultant Services) provides QR code generation services on an "as is" and "as available" basis. While we strive 
                 to maintain high service availability and reliability, we cannot guarantee uninterrupted or error-free 
                 operation of our services. Service interruptions may occur due to maintenance, technical difficulties, 
                 third-party service outages, or circumstances beyond our control.
@@ -72,7 +103,7 @@ export const Disclaimer = () => {
               <p>
                 Users are solely responsible for the content they input into our QR code generation tools. We do not 
                 monitor, verify, or endorse user-generated content and disclaim any responsibility for its accuracy, 
-                legality, or appropriateness. Users must ensure their content complies with applicable laws and 
+                legality, or appropriateness. Users must ensure their content complies with applicable Indian laws and 
                 regulations.
               </p>
 
@@ -110,7 +141,7 @@ export const Disclaimer = () => {
             <div className="prose prose-sm max-w-none space-y-4">
               <h3>Disclaimer of Warranties</h3>
               <p>
-                To the fullest extent permitted by applicable law, QRJI disclaims all warranties, express or implied, 
+                To the fullest extent permitted by applicable Indian law, SCS Sharma Consultant Services (operating as QRJI) disclaims all warranties, express or implied, 
                 including but not limited to warranties of merchantability, fitness for a particular purpose, 
                 non-infringement, and those arising from course of dealing or usage of trade. We do not warrant that 
                 our services will meet your requirements, be uninterrupted, timely, secure, or error-free.
@@ -118,7 +149,7 @@ export const Disclaimer = () => {
 
               <h3>Limitation of Damages</h3>
               <p>
-                In no event shall QRJI, its officers, directors, employees, agents, or affiliates be liable for any 
+                In no event shall SCS Sharma Consultant Services, its officers, directors, employees, agents, or affiliates be liable for any 
                 indirect, incidental, special, consequential, or punitive damages, including but not limited to loss 
                 of profits, data, use, goodwill, or other intangible losses, resulting from your use of our services, 
                 even if we have been advised of the possibility of such damages.
@@ -128,13 +159,13 @@ export const Disclaimer = () => {
               <p>
                 Our total liability to you for any claims arising out of or relating to your use of our services shall 
                 not exceed the amount you paid to us for the services in the twelve (12) months preceding the claim. 
-                For free services, our maximum liability shall be limited to fifty dollars ($50).
+                For free services, our maximum liability shall be limited to one thousand Indian Rupees (₹1,000).
               </p>
 
               <h3>Essential Purpose</h3>
               <p>
                 The limitations of liability set forth in this disclaimer are fundamental elements of the basis of the 
-                bargain between QRJI and you. Our services would not be provided without such limitations. These 
+                bargain between SCS Sharma Consultant Services (QRJI) and you. Our services would not be provided without such limitations. These 
                 limitations shall apply even if any limited remedy fails of its essential purpose.
               </p>
 
@@ -142,12 +173,12 @@ export const Disclaimer = () => {
               <p>
                 Some jurisdictions do not allow the exclusion or limitation of certain warranties or damages. In such 
                 jurisdictions, our liability and the liability of our affiliates shall be limited to the greatest 
-                extent permitted by applicable law. The above limitations may not apply to you if prohibited by local law.
+                extent permitted by applicable Indian law. The above limitations may not apply to you if prohibited by local law.
               </p>
 
               <h3>Indemnification</h3>
               <p>
-                You agree to indemnify, defend, and hold harmless QRJI and its officers, directors, employees, agents, 
+                You agree to indemnify, defend, and hold harmless SCS Sharma Consultant Services (QRJI) and its officers, directors, employees, agents, 
                 and affiliates from and against any claims, damages, obligations, losses, liabilities, costs, or debt, 
                 and expenses (including attorney's fees) arising from your use of our services, violation of these terms, 
                 or infringement of any third-party rights.
@@ -182,13 +213,13 @@ export const Disclaimer = () => {
                 <h4 className="font-semibold">Content Validation</h4>
                 <p className="text-muted-foreground">
                   We do not validate the content encoded in QR codes. Users are responsible for ensuring URLs are 
-                  accessible, contact information is accurate, and all content is appropriate and legal.
+                  accessible, contact information is accurate, and all content is appropriate and legal under Indian law.
                 </p>
 
                 <h4 className="font-semibold">Format Compatibility</h4>
                 <p className="text-muted-foreground">
                   Different QR code readers may interpret data formats differently. Specialized formats (WiFi, vCard, etc.) 
-                  may not be supported by all scanning applications.
+                  may not be supported by all scanning applications commonly used in India.
                 </p>
               </div>
             </CardContent>
@@ -211,20 +242,20 @@ export const Disclaimer = () => {
 
                 <h4 className="font-semibold">Third-Party Services</h4>
                 <p className="text-muted-foreground">
-                  QR codes linking to third-party services (social media, payment platforms, etc.) depend on those 
+                  QR codes linking to third-party services (UPI, social media, payment platforms, etc.) depend on those 
                   services' availability and terms. We are not responsible for third-party service interruptions.
                 </p>
 
                 <h4 className="font-semibold">Security Considerations</h4>
                 <p className="text-muted-foreground">
                   QR codes can link to potentially malicious content. Users should exercise caution when scanning 
-                  unknown QR codes and implement appropriate security measures.
+                  unknown QR codes and implement appropriate security measures as per Indian cybersecurity guidelines.
                 </p>
 
                 <h4 className="font-semibold">Network Requirements</h4>
                 <p className="text-muted-foreground">
                   Many QR code functions require internet connectivity. We cannot guarantee network availability 
-                  or performance when QR codes are scanned in various locations.
+                  or performance when QR codes are scanned in various locations across India.
                 </p>
               </div>
             </CardContent>
@@ -239,60 +270,57 @@ export const Disclaimer = () => {
               Legal and Compliance Considerations
             </CardTitle>
             <CardDescription>
-              Important legal considerations for users of QRJI services
+              Important legal considerations for users of QRJI services in India
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="prose prose-sm max-w-none space-y-4">
-              <h3>Compliance Responsibility</h3>
+              <h3>Compliance with Indian Laws</h3>
               <p>
-                Users are solely responsible for ensuring their use of QR codes complies with all applicable laws, 
-                regulations, and industry standards in their jurisdiction and the jurisdictions where QR codes will 
-                be used. This includes but is not limited to privacy laws, accessibility requirements, consumer 
-                protection regulations, and advertising standards.
+                Users are solely responsible for ensuring their use of QR codes complies with all applicable Indian laws, 
+                regulations, and industry standards. This includes but is not limited to the Information Technology Act, 2000, 
+                Consumer Protection Act, 2019, data protection regulations, and RBI guidelines for financial transactions.
               </p>
 
               <h3>Intellectual Property</h3>
               <p>
                 Users must ensure they have the right to use any content, logos, images, or other materials included 
-                in or linked from their QR codes. We do not verify intellectual property rights and disclaim 
-                responsibility for any infringement claims arising from user-generated content.
+                in or linked from their QR codes under Indian copyright and trademark laws. We do not verify intellectual 
+                property rights and disclaim responsibility for any infringement claims arising from user-generated content.
               </p>
 
               <h3>Privacy and Data Protection</h3>
               <p>
-                When QR codes collect or process personal information (such as contact forms, analytics, or user 
-                tracking), users must comply with applicable privacy laws including GDPR, CCPA, and other regional 
-                data protection regulations. Users are responsible for providing appropriate privacy notices and 
-                obtaining necessary consents.
+                When QR codes collect or process personal information, users must comply with applicable Indian privacy 
+                laws including the Digital Personal Data Protection Act, 2023 and IT Act provisions. Users are responsible 
+                for providing appropriate privacy notices and obtaining necessary consents as per Indian legal requirements.
               </p>
 
-              <h3>Accessibility Requirements</h3>
+              <h3>Financial Transactions</h3>
               <p>
-                In many jurisdictions, digital content must meet accessibility standards. Users deploying QR codes 
-                in public spaces, commercial settings, or as part of essential services should consider accessibility 
-                implications and provide alternative access methods where required by law.
+                For QR codes involving financial transactions (UPI payments, banking, etc.), users must comply with 
+                RBI guidelines, payment system regulations, and ensure proper security measures are implemented to 
+                protect sensitive financial information.
               </p>
 
               <h3>Commercial Use Restrictions</h3>
               <p>
-                Users engaging in commercial activities through QR codes must comply with relevant business regulations, 
-                licensing requirements, tax obligations, and consumer protection laws. This includes proper disclosure 
-                of commercial relationships, pricing information, and terms of sale.
+                Users engaging in commercial activities through QR codes must comply with relevant Indian business 
+                regulations, GST requirements, licensing obligations, and consumer protection laws. This includes 
+                proper disclosure of commercial relationships, pricing information, and terms of sale.
               </p>
 
               <h3>Content Restrictions</h3>
               <p>
-                Users may not use our services to create QR codes that link to or contain illegal content, including 
-                but not limited to copyrighted material without permission, defamatory content, hate speech, or 
-                content that violates platform policies of destination services.
+                Users may not use our services to create QR codes that link to or contain illegal content under Indian law, 
+                including but not limited to defamatory content, hate speech, content violating Indian penal code provisions, 
+                or material prohibited under the IT Act and related rules.
               </p>
 
-              <h3>International Considerations</h3>
+              <h3>Accessibility Requirements</h3>
               <p>
-                QR codes may be scanned across international borders, potentially subjecting content to different 
-                legal frameworks. Users should consider international legal implications, especially for commercial 
-                activities, data collection, and content that may be restricted in certain countries.
+                Users deploying QR codes in public spaces or for essential services in India should consider accessibility 
+                requirements and provide alternative access methods to ensure compliance with rights of persons with disabilities.
               </p>
             </div>
           </CardContent>
@@ -322,7 +350,7 @@ export const Disclaimer = () => {
               <p>
                 Users are solely responsible for all content they input into our QR code generation tools, including 
                 URLs, text, contact information, and any linked content. Users must ensure their content is accurate, 
-                appropriate, legal, and does not infringe on third-party rights.
+                appropriate, legal under Indian law, and does not infringe on third-party rights.
               </p>
 
               <h3>Security Practices</h3>
@@ -379,9 +407,9 @@ export const Disclaimer = () => {
               <h3>Disclaimer Updates</h3>
               <p>
                 We reserve the right to update this disclaimer at any time to reflect changes in our services, 
-                legal requirements, or business practices. Material changes will be communicated to users through 
-                appropriate channels, including email notifications for registered users and prominent notices on 
-                our website.
+                legal requirements under Indian law, or business practices. Material changes will be communicated 
+                to users through appropriate channels, including email notifications for registered users and 
+                prominent notices on our website.
               </p>
 
               <h3>Service Modifications</h3>
@@ -446,7 +474,7 @@ export const Disclaimer = () => {
                     For general questions about this disclaimer or our terms of service:
                   </p>
                   <p className="text-sm">
-                    Email: legal@qrji.com<br />
+                    Email: legal@scsconsultant.in<br />
                     Response time: 2-3 business days
                   </p>
                 </div>
@@ -456,7 +484,7 @@ export const Disclaimer = () => {
                     For enterprise customers or complex legal questions:
                   </p>
                   <p className="text-sm">
-                    Email: enterprise-legal@qrji.com<br />
+                    Email: enterprise@scsconsultant.in<br />
                     Response time: 1-2 business days
                   </p>
                 </div>
@@ -464,10 +492,12 @@ export const Disclaimer = () => {
 
               <div className="mt-6 p-4 bg-muted rounded-lg">
                 <p className="text-sm">
+                  <strong>Registered Company:</strong> SCS Sharma Consultant Services<br />
+                  <strong>Operating Brand:</strong> QRJI<br />
                   <strong>Last Updated:</strong> {new Date().toLocaleDateString()}<br />
                   <strong>Effective Date:</strong> {new Date().toLocaleDateString()}<br />
                   <strong>Document Version:</strong> 2.1<br />
-                  <strong>Governing Law:</strong> State of California, United States
+                  <strong>Governing Law:</strong> Laws of India, Courts in [Your City]
                 </p>
               </div>
             </div>
