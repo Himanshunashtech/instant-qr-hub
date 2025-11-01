@@ -483,34 +483,58 @@ END:VCARD`;
       // Determine which logo to use (priority: uploaded logo > app logo > none)
       const logoToUse = highQualityLogo || logo || appDesign?.appLogo;
       
-      if (logoToUse) {
-        const img = new Image();
-        img.onload = () => {
-          const centerX = canvas.width / 2;
-          const centerY = canvas.height / 2;
-          const logoX = centerX - logoSize / 2;
-          const logoY = centerY - logoSize / 2;
+     // In the generateQR function, replace the entire logo drawing section with this:
 
-          // Create background for logo with smoother edges
-          ctx.fillStyle = finalDesign.backgroundColor;
-          ctx.fillRect(logoX - 5, logoY - 5, logoSize + 10, logoSize + 10);
+if (logoToUse) {
+  const img = new Image();
+  img.onload = () => {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = logoSize / 2;
 
-          // Draw high quality logo
-          ctx.drawImage(img, logoX, logoY, logoSize, logoSize);
+    // Create circular white background for logo
+    ctx.fillStyle = finalDesign.backgroundColor;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 4, 0, 2 * Math.PI);
+    ctx.fill();
 
-          // Add watermark with better font
-          ctx.font = 'bold 12px Arial';
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-          ctx.textAlign = 'center';
-          ctx.fillText('QRJI.com', canvas.width / 2, canvas.height - 8);
+    // Create circular clipping path for the logo
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.clip();
 
-          // Generate final QR code with maximum quality
-          const qrDataUrl = canvas.toDataURL('image/png', 1.0);
-          setQrCode(qrDataUrl);
-          saveToHistory(qrDataUrl);
-        };
-        img.src = logoToUse;
-      } else {
+    // Draw high quality logo within circular clipping
+    ctx.drawImage(img, centerX - radius, centerY - radius, logoSize, logoSize);
+    ctx.restore();
+
+    // Add a subtle border around the circular logo
+    ctx.strokeStyle = finalDesign.foregroundColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 2, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // Add watermark with better font
+    ctx.font = 'bold 12px Arial';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.textAlign = 'center';
+    ctx.fillText('QRJI.com', canvas.width / 2, canvas.height - 8);
+
+    // Generate final QR code with maximum quality
+    const qrDataUrl = canvas.toDataURL('image/png', 1.0);
+    setQrCode(qrDataUrl);
+    saveToHistory(qrDataUrl);
+  };
+  img.onerror = () => {
+    // Fallback if image fails to load
+    console.error('Failed to load logo image');
+    const qrDataUrl = canvas.toDataURL('image/png', 1.0);
+    setQrCode(qrDataUrl);
+    saveToHistory(qrDataUrl);
+  };
+  img.src = logoToUse;
+} else {
         // Add watermark
         ctx.font = 'bold 12px Arial';
         ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
@@ -689,133 +713,498 @@ END:VCARD`;
   };
 
   const renderContentInput = () => {
-    const appDesignInfo = getCurrentAppDesignInfo();
+  const appDesignInfo = getCurrentAppDesignInfo();
+  
+  switch (selectedType) {
+    case 'url':
+      return (
+        <div className="space-y-2">
+          <Label htmlFor="url" className="text-dark-panel-foreground">Website URL</Label>
+          <Input
+            id="url"
+            placeholder="https://example.com"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          {appDesignInfo && (
+            <p className="text-xs text-green-500">
+              ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo
+            </p>
+          )}
+        </div>
+      );
     
-    switch (selectedType) {
-      case 'url':
-        return (
+    case 'text':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">Plain Text</Label>
+          <Textarea
+            placeholder="Enter any text content..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground min-h-[100px]"
+          />
+        </div>
+      );
+
+    case 'phone':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">Phone Number</Label>
+          <Input
+            placeholder="+1234567890"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">Include country code</p>
+        </div>
+      );
+
+    case 'email':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">Email Address</Label>
+          <Input
+            placeholder="email@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+        </div>
+      );
+
+    case 'sms':
+      return (
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="url" className="text-dark-panel-foreground">Website URL</Label>
+            <Label className="text-dark-panel-foreground">Phone Number</Label>
             <Input
-              id="url"
+              placeholder="+1234567890"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Message</Label>
+            <Textarea
+              placeholder="Enter your SMS message..."
+              value={smsText}
+              onChange={(e) => setSmsText(e.target.value)}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+        </div>
+      );
+
+    case 'wifi':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Network Name (SSID)</Label>
+            <Input
+              placeholder="MyWiFiNetwork"
+              value={wifiData.ssid}
+              onChange={(e) => setWifiData({...wifiData, ssid: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Password</Label>
+            <Input
+              type="password"
+              placeholder="WiFi password"
+              value={wifiData.password}
+              onChange={(e) => setWifiData({...wifiData, password: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Security Type</Label>
+            <select
+              value={wifiData.security}
+              onChange={(e) => setWifiData({...wifiData, security: e.target.value as 'WPA' | 'WEP' | 'nopass'})}
+              className="w-full bg-dark-input border-dark-border text-dark-panel-foreground rounded-md px-3 py-2"
+            >
+              <option value="WPA">WPA/WPA2</option>
+              <option value="WEP">WEP</option>
+              <option value="nopass">No Password</option>
+            </select>
+          </div>
+        </div>
+      );
+
+    case 'bitcoin':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">Bitcoin Address</Label>
+          <Input
+            placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+            value={bitcoinAddress}
+            onChange={(e) => setBitcoinAddress(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">Enter your Bitcoin wallet address</p>
+        </div>
+      );
+
+    case 'contact':
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-dark-panel-foreground">First Name</Label>
+              <Input
+                placeholder="John"
+                value={contactData.firstName}
+                onChange={(e) => setContactData({...contactData, firstName: e.target.value})}
+                className="bg-dark-input border-dark-border text-dark-panel-foreground"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-dark-panel-foreground">Last Name</Label>
+              <Input
+                placeholder="Doe"
+                value={contactData.lastName}
+                onChange={(e) => setContactData({...contactData, lastName: e.target.value})}
+                className="bg-dark-input border-dark-border text-dark-panel-foreground"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Organization</Label>
+            <Input
+              placeholder="Company Inc."
+              value={contactData.organization}
+              onChange={(e) => setContactData({...contactData, organization: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Phone</Label>
+            <Input
+              placeholder="+1234567890"
+              value={contactData.phone}
+              onChange={(e) => setContactData({...contactData, phone: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Email</Label>
+            <Input
+              placeholder="email@example.com"
+              value={contactData.email}
+              onChange={(e) => setContactData({...contactData, email: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Website</Label>
+            <Input
               placeholder="https://example.com"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              value={contactData.url}
+              onChange={(e) => setContactData({...contactData, url: e.target.value})}
               className="bg-dark-input border-dark-border text-dark-panel-foreground"
             />
-            {appDesignInfo && (
-              <p className="text-xs text-green-500">
-                ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo
-              </p>
-            )}
           </div>
-        );
-      
-      case 'whatsapp':
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-dark-panel-foreground">Phone Number</Label>
-              <Input
-                placeholder="+1234567890"
-                value={whatsappData.number}
-                onChange={(e) => setWhatsappData({...whatsappData, number: e.target.value})}
-                className="bg-dark-input border-dark-border text-dark-panel-foreground"
-              />
-              <p className="text-xs text-muted-foreground">Include country code without + or spaces</p>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-dark-panel-foreground">Pre-filled Message</Label>
-              <Textarea
-                placeholder="Hello, I'm interested in..."
-                value={whatsappData.message}
-                onChange={(e) => setWhatsappData({...whatsappData, message: e.target.value})}
-                className="bg-dark-input border-dark-border text-dark-panel-foreground"
-              />
-            </div>
-            <p className="text-xs text-green-500">
-              ✓ Using WhatsApp brand colors and logo automatically
-            </p>
-          </div>
-        );
+        </div>
+      );
 
-      case 'youtube':
-        return (
+    case 'location':
+      return (
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-dark-panel-foreground">YouTube Video/Channel</Label>
+            <Label className="text-dark-panel-foreground">Latitude</Label>
             <Input
-              placeholder="https://youtube.com/watch?v=..."
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
+              placeholder="40.7128"
+              value={locationData.latitude}
+              onChange={(e) => setLocationData({...locationData, latitude: e.target.value})}
               className="bg-dark-input border-dark-border text-dark-panel-foreground"
             />
-            <p className="text-xs text-muted-foreground">YouTube video or channel URL</p>
-            <p className="text-xs text-green-500">
-              ✓ Using YouTube brand colors and logo automatically
-            </p>
           </div>
-        );
-
-      case 'location':
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-dark-panel-foreground">Latitude</Label>
-              <Input
-                placeholder="40.7128"
-                value={locationData.latitude}
-                onChange={(e) => setLocationData({...locationData, latitude: e.target.value})}
-                className="bg-dark-input border-dark-border text-dark-panel-foreground"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-dark-panel-foreground">Longitude</Label>
-              <Input
-                placeholder="-74.0060"
-                value={locationData.longitude}
-                onChange={(e) => setLocationData({...locationData, longitude: e.target.value})}
-                className="bg-dark-input border-dark-border text-dark-panel-foreground"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-dark-panel-foreground">Label (Optional)</Label>
-              <Input
-                placeholder="New York City"
-                value={locationData.label}
-                onChange={(e) => setLocationData({...locationData, label: e.target.value})}
-                className="bg-dark-input border-dark-border text-dark-panel-foreground"
-              />
-            </div>
-            <p className="text-xs text-green-500">
-              ✓ Using Google Maps brand colors and logo automatically
-            </p>
-          </div>
-        );
-
-      case 'social':
-        return (
           <div className="space-y-2">
-            <Label className="text-dark-panel-foreground">Social Media Profile</Label>
+            <Label className="text-dark-panel-foreground">Longitude</Label>
             <Input
-              placeholder="https://instagram.com/username"
-              value={socialUrl}
-              onChange={(e) => setSocialUrl(e.target.value)}
+              placeholder="-74.0060"
+              value={locationData.longitude}
+              onChange={(e) => setLocationData({...locationData, longitude: e.target.value})}
               className="bg-dark-input border-dark-border text-dark-panel-foreground"
             />
-            <p className="text-xs text-muted-foreground">Instagram, Twitter, TikTok, LinkedIn, etc.</p>
-            {appDesignInfo && (
-              <p className="text-xs text-green-500">
-                ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo
-              </p>
-            )}
           </div>
-        );
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Label (Optional)</Label>
+            <Input
+              placeholder="New York City"
+              value={locationData.label}
+              onChange={(e) => setLocationData({...locationData, label: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <p className="text-xs text-green-500">
+            ✓ Using Google Maps brand colors and logo automatically
+          </p>
+        </div>
+      );
 
-      // ... rest of the renderContentInput cases remain the same
-      default:
-        return null;
-    }
-  };
+    case 'event':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Event Title</Label>
+            <Input
+              placeholder="Business Meeting"
+              value={eventData.title}
+              onChange={(e) => setEventData({...eventData, title: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-dark-panel-foreground">Start Date & Time</Label>
+              <Input
+                type="datetime-local"
+                value={eventData.startDate}
+                onChange={(e) => setEventData({...eventData, startDate: e.target.value})}
+                className="bg-dark-input border-dark-border text-dark-panel-foreground"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-dark-panel-foreground">End Date & Time</Label>
+              <Input
+                type="datetime-local"
+                value={eventData.endDate}
+                onChange={(e) => setEventData({...eventData, endDate: e.target.value})}
+                className="bg-dark-input border-dark-border text-dark-panel-foreground"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Location</Label>
+            <Input
+              placeholder="Conference Room A"
+              value={eventData.location}
+              onChange={(e) => setEventData({...eventData, location: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Description</Label>
+            <Textarea
+              placeholder="Event description..."
+              value={eventData.description}
+              onChange={(e) => setEventData({...eventData, description: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+        </div>
+      );
+
+    case 'appstore':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">App Store URL</Label>
+          <Input
+            placeholder="https://apps.apple.com/app/id123456789"
+            value={appStoreUrl}
+            onChange={(e) => setAppStoreUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">Apple App Store or Google Play Store URL</p>
+        </div>
+      );
+
+    case 'social':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">Social Media Profile</Label>
+          <Input
+            placeholder="https://instagram.com/username"
+            value={socialUrl}
+            onChange={(e) => setSocialUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">Instagram, Twitter, TikTok, LinkedIn, etc.</p>
+          {appDesignInfo && (
+            <p className="text-xs text-green-500">
+              ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo
+            </p>
+          )}
+        </div>
+      );
+
+    case 'youtube':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">YouTube Video/Channel</Label>
+          <Input
+            placeholder="https://youtube.com/watch?v=..."
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">YouTube video or channel URL</p>
+          <p className="text-xs text-green-500">
+            ✓ Using YouTube brand colors and logo automatically
+          </p>
+        </div>
+      );
+
+    case 'payment':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">Payment URL</Label>
+          <Input
+            placeholder="https://paypal.me/username or payment link"
+            value={paymentUrl}
+            onChange={(e) => setPaymentUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">PayPal, Stripe, or other payment links</p>
+        </div>
+      );
+
+    case 'crypto':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Cryptocurrency Type</Label>
+            <select
+              value={cryptoType}
+              onChange={(e) => setCryptoType(e.target.value)}
+              className="w-full bg-dark-input border-dark-border text-dark-panel-foreground rounded-md px-3 py-2"
+            >
+              <option value="ethereum">Ethereum</option>
+              <option value="bitcoin">Bitcoin</option>
+              <option value="litecoin">Litecoin</option>
+              <option value="dogecoin">Dogecoin</option>
+              <option value="ripple">Ripple (XRP)</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Wallet Address</Label>
+            <Input
+              placeholder="0x742d35Cc6634C0532925a3b8D..."
+              value={cryptoAddress}
+              onChange={(e) => setCryptoAddress(e.target.value)}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+        </div>
+      );
+
+    case 'emailprefilled':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Recipient Email</Label>
+            <Input
+              placeholder="recipient@example.com"
+              value={emailPrefilledData.email}
+              onChange={(e) => setEmailPrefilledData({...emailPrefilledData, email: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Subject</Label>
+            <Input
+              placeholder="Email subject..."
+              value={emailPrefilledData.subject}
+              onChange={(e) => setEmailPrefilledData({...emailPrefilledData, subject: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Body</Label>
+            <Textarea
+              placeholder="Email body content..."
+              value={emailPrefilledData.body}
+              onChange={(e) => setEmailPrefilledData({...emailPrefilledData, body: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground min-h-[100px]"
+            />
+          </div>
+        </div>
+      );
+
+    case 'whatsapp':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Phone Number</Label>
+            <Input
+              placeholder="1234567890"
+              value={whatsappData.number}
+              onChange={(e) => setWhatsappData({...whatsappData, number: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+            <p className="text-xs text-muted-foreground">Include country code without + or spaces</p>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-dark-panel-foreground">Pre-filled Message</Label>
+            <Textarea
+              placeholder="Hello, I'm interested in..."
+              value={whatsappData.message}
+              onChange={(e) => setWhatsappData({...whatsappData, message: e.target.value})}
+              className="bg-dark-input border-dark-border text-dark-panel-foreground"
+            />
+          </div>
+          <p className="text-xs text-green-500">
+            ✓ Using WhatsApp brand colors and logo automatically
+          </p>
+        </div>
+      );
+
+    case 'meeting':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">Meeting URL</Label>
+          <Input
+            placeholder="https://zoom.us/j/123456789 or other meeting link"
+            value={meetingUrl}
+            onChange={(e) => setMeetingUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">Zoom, Google Meet, Teams, etc.</p>
+        </div>
+      );
+
+    case 'file':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">File URL</Label>
+          <Input
+            placeholder="https://example.com/document.pdf"
+            value={fileUrl}
+            onChange={(e) => setFileUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">URL to PDF, document, or downloadable file</p>
+        </div>
+      );
+
+    case 'deeplink':
+      return (
+        <div className="space-y-2">
+          <Label className="text-dark-panel-foreground">App Deep Link</Label>
+          <Input
+            placeholder="myapp://open/screen or custom URL scheme"
+            value={deepLinkUrl}
+            onChange={(e) => setDeepLinkUrl(e.target.value)}
+            className="bg-dark-input border-dark-border text-dark-panel-foreground"
+          />
+          <p className="text-xs text-muted-foreground">Custom URL scheme for mobile apps</p>
+        </div>
+      );
+
+    default:
+      return (
+        <div className="text-center text-muted-foreground py-4">
+          Select a QR code type to get started
+        </div>
+      );
+  }
+};
 
   return (
     <div className="min-h-screen bg-background">
@@ -904,76 +1293,81 @@ END:VCARD`;
               {renderContentInput()}
             </div>
 
-            {/* Logo Upload Section */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-dark-panel-foreground mb-4 flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Custom Logo (Optional)
-              </h3>
-              
-              {!logo ? (
-                <div className="border-2 border-dashed border-dark-border rounded-lg p-4 text-center">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                    id="logo-upload"
-                  />
-                  <Label 
-                    htmlFor="logo-upload" 
-                    className="cursor-pointer text-primary hover:text-primary/80"
-                  >
-                    Click to upload custom logo
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG up to 5MB (High Quality)
-                  </p>
-                  {getCurrentAppDesignInfo() && (
-                    <p className="text-xs text-green-500 mt-2">
-                      ✓ App logo will be used automatically unless you upload a custom one
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="relative">
-                  <div className="flex items-center gap-3 p-3 border border-dark-border rounded-lg">
-                    <img 
-                      src={logo} 
-                      alt="Logo" 
-                      className="w-12 h-12 object-contain"
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-dark-panel-foreground">Custom logo uploaded</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Label htmlFor="logo-size" className="text-xs text-muted-foreground">
-                          Size:
-                        </Label>
-                        <Input
-                          id="logo-size"
-                          type="range"
-                          min="40"
-                          max="100"
-                          value={logoSize}
-                          onChange={(e) => setLogoSize(parseInt(e.target.value))}
-                          className="w-20"
-                        />
-                        <span className="text-xs text-muted-foreground">{logoSize}px</span>
-                      </div>
-                      <p className="text-xs text-green-500 mt-1">✓ High quality processing enabled</p>
-                    </div>
-                    <Button
-                      onClick={removeLogo}
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-red-600"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+           // In the Logo Upload Section, replace the current logo display code with this:
+
+{/* Logo Upload Section */}
+<div className="mb-6">
+  <h3 className="text-lg font-semibold text-dark-panel-foreground mb-4 flex items-center gap-2">
+    <Upload className="h-5 w-5" />
+    Custom Logo (Optional)
+  </h3>
+  
+  {!logo ? (
+    <div className="border-2 border-dashed border-dark-border rounded-lg p-4 text-center">
+      <Input
+        type="file"
+        accept="image/*"
+        onChange={handleLogoUpload}
+        className="hidden"
+        id="logo-upload"
+      />
+      <Label 
+        htmlFor="logo-upload" 
+        className="cursor-pointer text-primary hover:text-primary/80"
+      >
+        Click to upload custom logo
+      </Label>
+      <p className="text-xs text-muted-foreground mt-1">
+        PNG, JPG up to 5MB (High Quality)
+      </p>
+      {getCurrentAppDesignInfo() && (
+        <p className="text-xs text-green-500 mt-2">
+          ✓ App logo will be used automatically unless you upload a custom one
+        </p>
+      )}
+    </div>
+  ) : (
+    <div className="relative">
+      <div className="flex items-center gap-3 p-3 border border-dark-border rounded-lg">
+        {/* Changed from square to circle */}
+        <div className="w-12 h-12 rounded-full overflow-hidden bg-dark-input flex items-center justify-center">
+          <img 
+            src={logo} 
+            alt="Logo" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-dark-panel-foreground">Custom logo uploaded</p>
+          <div className="flex items-center gap-2 mt-1">
+            <Label htmlFor="logo-size" className="text-xs text-muted-foreground">
+              Size:
+            </Label>
+            <Input
+              id="logo-size"
+              type="range"
+              min="40"
+              max="100"
+              value={logoSize}
+              onChange={(e) => setLogoSize(parseInt(e.target.value))}
+              className="w-20"
+            />
+            <span className="text-xs text-muted-foreground">{logoSize}px</span>
+          </div>
+          <p className="text-xs text-green-500 mt-1">✓ High quality processing enabled</p>
+        </div>
+        <Button
+          onClick={removeLogo}
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-red-600"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )}
+</div>
 
             {/* Design Info Panel */}
             {getCurrentAppDesignInfo() && (
