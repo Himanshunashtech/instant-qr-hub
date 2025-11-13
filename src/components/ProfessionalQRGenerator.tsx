@@ -1,45 +1,32 @@
+// ----------------------------------------------------------
+// PART 1 / 3 — Imports, Types, Logos, States, QR Styling Setup
+// ----------------------------------------------------------
+
 import React, { useState, useEffect, useRef } from 'react';
-import QRCode from 'qrcode';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Link, 
-  Grid3X3, 
-  User, 
-  MessageSquare, 
-  Smartphone, 
-  Mail, 
-  Phone,
-  Download, 
-  Copy, 
-  Printer,
-  MapPin,
-  Calendar,
-  Store,
-  Users,
-  Play,
-  CreditCard,
-  Coins,
-  MessageCircle,
-  Video,
-  FileText,
-  ExternalLink,
-  Palette,
-  Settings,
-  Upload,
-  Share2,
-  Eye,
-  Lock,
-  X
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import QRCodeStyling from "qr-code-styling";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+import {
+  Link, Grid3X3, User, MessageSquare, Smartphone, Mail, Phone, Download, Copy,
+  Printer, MapPin, Calendar, Store, Users, Play, CreditCard, Coins, MessageCircle,
+  Video, FileText, ExternalLink, Palette, Settings, Upload, Share2, Eye, Lock, X
+} from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
+// ----------------------------------------------------------
+// TYPES
+// ----------------------------------------------------------
 
 interface QRDesignOptions {
   foregroundColor: string;
   backgroundColor: string;
-  dotStyle: 'square' | 'round' | 'dots';
+  dotStyle: "square" | "round" | "dots";
+  ringColor: string; // NEW: Color for the ring around logo
+  ringWidth: number; // NEW: Width of the ring in pixels
 }
 
 interface QRType {
@@ -51,7 +38,10 @@ interface QRType {
   appLogo?: string;
 }
 
-// App-specific logos as SVG data URLs
+// ----------------------------------------------------------
+// APP LOGOS (your same SVG data URLs)
+// ----------------------------------------------------------
+
 const appLogos = {
   whatsapp: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2325D366' d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893c0-3.189-1.248-6.189-3.515-8.447'/%3E%3C/svg%3E",
   
@@ -72,28 +62,36 @@ const appLogos = {
   spotify: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231DB954' d='M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-2-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z'/%3E%3C/svg%3E"
 };
 
+// ----------------------------------------------------------
+// QR TYPE DEFINITIONS
+// ----------------------------------------------------------
+
 const qrTypes: QRType[] = [
-  { id: 'url', label: 'URL', icon: Link, color: 'text-green-500' },
-  { id: 'wifi', label: 'WiFi', icon: Smartphone, color: 'text-blue-500' },
-  { id: 'text', label: 'Plain Text', icon: MessageSquare, color: 'text-gray-500' },
-  { id: 'contact', label: 'Contact', icon: User, color: 'text-purple-500' },
-  { id: 'email', label: 'Email', icon: Mail, color: 'text-cyan-500' },
-  { id: 'phone', label: 'Phone', icon: Phone, color: 'text-emerald-500' },
-  { id: 'sms', label: 'SMS', icon: MessageSquare, color: 'text-orange-500' },
-  { id: 'bitcoin', label: 'Bitcoin', icon: Grid3X3, color: 'text-yellow-500' },
-  { id: 'location', label: 'Location', icon: MapPin, color: 'text-red-500', appColor: '#4285F4', appLogo: appLogos.maps },
-  { id: 'event', label: 'Event', icon: Calendar, color: 'text-indigo-500' },
-  { id: 'appstore', label: 'App Store', icon: Store, color: 'text-blue-600' },
-  { id: 'social', label: 'Social Media', icon: Users, color: 'text-pink-500' },
-  { id: 'youtube', label: 'YouTube', icon: Play, color: 'text-red-600', appColor: '#FF0000', appLogo: appLogos.youtube },
-  { id: 'payment', label: 'Payment', icon: CreditCard, color: 'text-green-600' },
-  { id: 'crypto', label: 'Crypto', icon: Coins, color: 'text-orange-600' },
-  { id: 'emailprefilled', label: 'Email+', icon: Mail, color: 'text-teal-500' },
-  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: 'text-green-600', appColor: '#25D366', appLogo: appLogos.whatsapp },
-  { id: 'meeting', label: 'Meeting', icon: Video, color: 'text-blue-700' },
-  { id: 'file', label: 'File', icon: FileText, color: 'text-slate-500' },
-  { id: 'deeplink', label: 'App Link', icon: ExternalLink, color: 'text-violet-500' },
+  { id: "url", label: "URL", icon: Link, color: "text-green-500" },
+  { id: "wifi", label: "WiFi", icon: Smartphone, color: "text-blue-500" },
+  { id: "text", label: "Plain Text", icon: MessageSquare, color: "text-gray-500" },
+  { id: "contact", label: "Contact", icon: User, color: "text-purple-500" },
+  { id: "email", label: "Email", icon: Mail, color: "text-cyan-500" },
+  { id: "phone", label: "Phone", icon: Phone, color: "text-emerald-500" },
+  { id: "sms", label: "SMS", icon: MessageSquare, color: "text-orange-500" },
+  { id: "bitcoin", label: "Bitcoin", icon: Grid3X3, color: "text-yellow-500" },
+  { id: "location", label: "Location", icon: MapPin, color: "text-red-500", appColor: "#4285F4", appLogo: appLogos.maps },
+  { id: "event", label: "Event", icon: Calendar, color: "text-indigo-500" },
+  { id: "appstore", label: "App Store", icon: Store, color: "text-blue-600" },
+  { id: "social", label: "Social Media", icon: Users, color: "text-pink-500" },
+  { id: "youtube", label: "YouTube", icon: Play, color: "text-red-600", appColor: "#FF0000", appLogo: appLogos.youtube },
+  { id: "payment", label: "Payment", icon: CreditCard, color: "text-green-600" },
+  { id: "crypto", label: "Crypto", icon: Coins, color: "text-orange-600" },
+  { id: "emailprefilled", label: "Email+", icon: Mail, color: "text-teal-500" },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "text-green-600", appColor: "#25D366", appLogo: appLogos.whatsapp },
+  { id: "meeting", label: "Meeting", icon: Video, color: "text-blue-700" },
+  { id: "file", label: "File", icon: FileText, color: "text-slate-500" },
+  { id: "deeplink", label: "App Link", icon: ExternalLink, color: "text-violet-500" },
 ];
+
+// ----------------------------------------------------------
+// FORM TYPES
+// ----------------------------------------------------------
 
 interface ContactData {
   firstName: string;
@@ -107,7 +105,7 @@ interface ContactData {
 interface WiFiData {
   ssid: string;
   password: string;
-  security: 'WPA' | 'WEP' | 'nopass';
+  security: "WPA" | "WEP" | "nopass";
 }
 
 interface LocationData {
@@ -135,96 +133,107 @@ interface WhatsAppData {
   message: string;
 }
 
+// ----------------------------------------------------------
+// MAIN COMPONENT START
+// ----------------------------------------------------------
+
 export const ProfessionalQRGenerator = () => {
-  const [selectedType, setSelectedType] = useState('url');
-  const [qrCode, setQrCode] = useState('');
-  
-  // Content states
-  const [url, setUrl] = useState('');
-  const [text, setText] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [smsText, setSmsText] = useState('');
-  const [bitcoinAddress, setBitcoinAddress] = useState('');
+  // ------------------------------------------
+  // ALL STATES
+  // ------------------------------------------
+
+  const [selectedType, setSelectedType] = useState("url");
+  const [qrCode, setQrCode] = useState("");
+  const [url, setUrl] = useState("");
+  const [text, setText] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [smsText, setSmsText] = useState("");
+  const [bitcoinAddress, setBitcoinAddress] = useState("");
+
   const [contactData, setContactData] = useState<ContactData>({
-    firstName: '',
-    lastName: '',
-    organization: '',
-    phone: '',
-    email: '',
-    url: ''
+    firstName: "",
+    lastName: "",
+    organization: "",
+    phone: "",
+    email: "",
+    url: "",
   });
+
   const [wifiData, setWifiData] = useState<WiFiData>({
-    ssid: '',
-    password: '',
-    security: 'WPA'
+    ssid: "",
+    password: "",
+    security: "WPA",
   });
+
   const [locationData, setLocationData] = useState<LocationData>({
-    latitude: '',
-    longitude: '',
-    label: ''
+    latitude: "",
+    longitude: "",
+    label: "",
   });
+
   const [eventData, setEventData] = useState<EventData>({
-    title: '',
-    startDate: '',
-    endDate: '',
-    location: '',
-    description: ''
+    title: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+    description: "",
   });
-  const [appStoreUrl, setAppStoreUrl] = useState('');
-  const [socialUrl, setSocialUrl] = useState('');
-  const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [paymentUrl, setPaymentUrl] = useState('');
-  const [cryptoAddress, setCryptoAddress] = useState('');
-  const [cryptoType, setCryptoType] = useState('ethereum');
+
+  const [appStoreUrl, setAppStoreUrl] = useState("");
+  const [socialUrl, setSocialUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [paymentUrl, setPaymentUrl] = useState("");
+
+  const [cryptoAddress, setCryptoAddress] = useState("");
+  const [cryptoType, setCryptoType] = useState("ethereum");
+
   const [emailPrefilledData, setEmailPrefilledData] = useState<EmailPrefilledData>({
-    email: '',
-    subject: '',
-    body: ''
+    email: "",
+    subject: "",
+    body: "",
   });
+
   const [whatsappData, setWhatsappData] = useState<WhatsAppData>({
-    number: '',
-    message: ''
+    number: "",
+    message: "",
   });
-  const [meetingUrl, setMeetingUrl] = useState('');
-  const [fileUrl, setFileUrl] = useState('');
-  const [deepLinkUrl, setDeepLinkUrl] = useState('');
-  
-  // Design options
+
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
+  const [deepLinkUrl, setDeepLinkUrl] = useState("");
+
+  // ------------------------------------------
+  // DESIGN OPTIONS (with ring settings)
+  // ------------------------------------------
+
   const [designOptions, setDesignOptions] = useState<QRDesignOptions>({
-    foregroundColor: '#000000',
-    backgroundColor: '#FFFFFF',
-    dotStyle: 'square'
+    foregroundColor: "#000000",
+    backgroundColor: "#FFFFFF",
+    dotStyle: "dots",
+    ringColor: "#000000", // Default ring color
+    ringWidth: 3, // Default ring width in pixels
   });
 
-  // Logo state
+  // ------------------------------------------
+  // LOGO HANDLING
+  // ------------------------------------------
+
   const [logo, setLogo] = useState<string | null>(null);
-  const [logoSize, setLogoSize] = useState(60);
-  const [highQualityLogo, setHighQualityLogo] = useState<string | null>(null);
+  const [processedLogo, setProcessedLogo] = useState<string | null>(null);
 
-  // Advanced features
-  const [showDesignPanel, setShowDesignPanel] = useState(false);
-  const [showBatchGenerator, setShowBatchGenerator] = useState(false);
-  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const canvasPreviewRef = useRef<HTMLDivElement>(null);
+  const qrInstanceRef = useRef<QRCodeStyling | null>(null);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const logoCanvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Clear QR code when inputs change
-    setQrCode('');
-  }, [selectedType, url, text, phone, email, smsText, contactData, wifiData, bitcoinAddress, locationData, eventData, appStoreUrl, socialUrl, youtubeUrl, paymentUrl, cryptoAddress, emailPrefilledData, whatsappData, meetingUrl, fileUrl, deepLinkUrl, designOptions, logo, logoSize]);
+  // ----------------------------------------------------------
+  // LOGO PROCESSING - CREATE CIRCULAR LOGOS WITH RING
+  // ----------------------------------------------------------
 
-  // Function to create high quality version of logo
-  const createHighQualityLogo = (imageSrc: string): Promise<string> => {
+  const createCircularLogoWithRing = (imageSrc: string, ringColor: string = "#000000", ringWidth: number = 3): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const canvas = logoCanvasRef.current;
-      if (!canvas) {
-        reject(new Error('Canvas not available'));
-        return;
-      }
-
+      const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         reject(new Error('Canvas context not available'));
@@ -233,21 +242,36 @@ export const ProfessionalQRGenerator = () => {
 
       const img = new Image();
       img.onload = () => {
-        // Set canvas to high resolution for better quality
-        const scale = 2;
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
+        // Fixed size for circular logo with ring
+        const size = 120;
+        const ringPadding = ringWidth + 2; // Extra padding for the ring
+        canvas.width = size + (ringPadding * 2);
+        canvas.height = size + (ringPadding * 2);
 
-        // Enable high quality image rendering
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        
-        // Draw image at high resolution
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Create circular clipping path for the ring background (white)
+        ctx.beginPath();
+        ctx.arc(size/2 + ringPadding, size/2 + ringPadding, size/2 + ringWidth, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF'; // White background for the ring area
+        ctx.fill();
 
-        // Convert to high quality data URL
-        const highQualityDataUrl = canvas.toDataURL('image/png', 1.0);
-        resolve(highQualityDataUrl);
+        // Draw the ring
+        ctx.beginPath();
+        ctx.arc(size/2 + ringPadding, size/2 + ringPadding, size/2 + ringWidth, 0, Math.PI * 2);
+        ctx.strokeStyle = ringColor;
+        ctx.lineWidth = ringWidth;
+        ctx.stroke();
+
+        // Create circular clipping path for the image
+        ctx.beginPath();
+        ctx.arc(size/2 + ringPadding, size/2 + ringPadding, size/2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        // Draw image centered and scaled to fill circle
+        ctx.drawImage(img, ringPadding, ringPadding, size, size);
+
+        const circularDataUrl = canvas.toDataURL('image/png', 1.0);
+        resolve(circularDataUrl);
       };
 
       img.onerror = reject;
@@ -255,181 +279,104 @@ export const ProfessionalQRGenerator = () => {
     });
   };
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Error",
-          description: "Logo size should be less than 5MB for best quality",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const originalDataUrl = e.target?.result as string;
-        setLogo(originalDataUrl);
-
-        try {
-          const highQualityLogo = await createHighQualityLogo(originalDataUrl);
-          setHighQualityLogo(highQualityLogo);
-          
-          toast({
-            title: "Success",
-            description: "High-quality logo uploaded successfully",
-          });
-        } catch (error) {
-          console.error('Error processing logo:', error);
-          setHighQualityLogo(originalDataUrl);
-          toast({
-            title: "Warning",
-            description: "Logo uploaded with standard quality",
-            variant: "default"
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+  // Process app logos to be circular with ring as well
+  const processAppLogo = async (logoUrl: string, ringColor: string = "#000000", ringWidth: number = 3): Promise<string> => {
+    try {
+      return await createCircularLogoWithRing(logoUrl, ringColor, ringWidth);
+    } catch (error) {
+      console.error('Failed to process app logo:', error);
+      return logoUrl;
     }
   };
 
-  const removeLogo = () => {
-    setLogo(null);
-    setHighQualityLogo(null);
-  };
+  // ----------------------------------------------------------
+  // QR INSTANCE INIT
+  // ----------------------------------------------------------
 
-  // Get app-specific design for QR type
-  const getAppSpecificDesign = () => {
-    const qrType = qrTypes.find(t => t.id === selectedType);
-    
-    if (qrType?.appColor && qrType?.appLogo) {
-      return {
-        foregroundColor: qrType.appColor,
-        backgroundColor: '#FFFFFF',
-        appLogo: qrType.appLogo
-      };
-    }
-    
-    // Auto-detect social media platforms from URLs
-    if (selectedType === 'url' || selectedType === 'social') {
-      const content = getQRContent().toLowerCase();
-      
-      if (content.includes('whatsapp') || content.includes('wa.me')) {
-        return {
-          foregroundColor: '#25D366',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.whatsapp
-        };
-      }
-      if (content.includes('youtube') || content.includes('youtu.be')) {
-        return {
-          foregroundColor: '#FF0000',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.youtube
-        };
-      }
-      if (content.includes('google') && content.includes('map')) {
-        return {
-          foregroundColor: '#4285F4',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.maps
-        };
-      }
-      if (content.includes('twitter') || content.includes('x.com')) {
-        return {
-          foregroundColor: '#1DA1F2',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.twitter
-        };
-      }
-      if (content.includes('facebook')) {
-        return {
-          foregroundColor: '#1877F2',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.facebook
-        };
-      }
-      if (content.includes('instagram')) {
-        return {
-          foregroundColor: '#E4405F',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.instagram
-        };
-      }
-      if (content.includes('linkedin')) {
-        return {
-          foregroundColor: '#0A66C2',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.linkedin
-        };
-      }
-      if (content.includes('tiktok')) {
-        return {
-          foregroundColor: '#000000',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.tiktok
-        };
-      }
-      if (content.includes('spotify')) {
-        return {
-          foregroundColor: '#1DB954',
-          backgroundColor: '#FFFFFF',
-          appLogo: appLogos.spotify
-        };
-      }
-    }
-    
-    return null;
-  };
+  useEffect(() => {
+    qrInstanceRef.current = new QRCodeStyling({
+      width: 400,
+      height: 400,
+      type: "canvas",
+      data: "",
+      qrOptions: {
+        errorCorrectionLevel: "H",
+      },
+      dotsOptions: {
+        type: "dots",
+        color: "#000000",
+      },
+      cornersSquareOptions: {
+        type: "dot",
+        color: "#000000",
+      },
+      cornersDotOptions: {
+        type: "dot",
+        color: "#000000",
+      },
+      backgroundOptions: {
+        color: "#FFFFFF",
+      },
+      imageOptions: {
+        margin: 4,
+        hideBackgroundDots: true,
+        imageSize: 0.25, // Slightly larger to accommodate ring
+        crossOrigin: "anonymous",
+      },
+    });
+  }, []);
+
+  // ----------------------------------------------------------
+  // QR CONTENT BUILDER
+  // ----------------------------------------------------------
 
   const getQRContent = () => {
     switch (selectedType) {
-      case 'url':
+      case "url":
         return url;
-      case 'text':
+      case "text":
         return text;
-      case 'phone':
+      case "phone":
         return `tel:${phone}`;
-      case 'email':
+      case "email":
         return `mailto:${email}`;
-      case 'sms':
+      case "sms":
         return `sms:${phone}?body=${encodeURIComponent(smsText)}`;
-      case 'wifi':
+      case "wifi":
         return `WIFI:T:${wifiData.security};S:${wifiData.ssid};P:${wifiData.password};H:false;;`;
-      case 'bitcoin':
+      case "bitcoin":
         return `bitcoin:${bitcoinAddress}`;
-      case 'location':
+      case "location":
         return `geo:${locationData.latitude},${locationData.longitude}?q=${locationData.latitude},${locationData.longitude}(${encodeURIComponent(locationData.label)})`;
-      case 'event':
+      case "event":
         return `BEGIN:VEVENT
-DTSTART:${eventData.startDate.replace(/[-:]/g, '')}00Z
-DTEND:${eventData.endDate.replace(/[-:]/g, '')}00Z
+DTSTART:${eventData.startDate.replace(/[-:]/g, "")}00Z
+DTEND:${eventData.endDate.replace(/[-:]/g, "")}00Z
 SUMMARY:${eventData.title}
 LOCATION:${eventData.location}
 DESCRIPTION:${eventData.description}
 END:VEVENT`;
-      case 'appstore':
+      case "appstore":
         return appStoreUrl;
-      case 'social':
+      case "social":
         return socialUrl;
-      case 'youtube':
+      case "youtube":
         return youtubeUrl;
-      case 'payment':
+      case "payment":
         return paymentUrl;
-      case 'crypto':
+      case "crypto":
         return `${cryptoType}:${cryptoAddress}`;
-      case 'emailprefilled':
+      case "emailprefilled":
         return `mailto:${emailPrefilledData.email}?subject=${encodeURIComponent(emailPrefilledData.subject)}&body=${encodeURIComponent(emailPrefilledData.body)}`;
-      case 'whatsapp':
-        return `https://wa.me/${whatsappData.number.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappData.message)}`;
-      case 'meeting':
+      case "whatsapp":
+        return `https://wa.me/${whatsappData.number.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(whatsappData.message)}`;
+      case "meeting":
         return meetingUrl;
-      case 'file':
+      case "file":
         return fileUrl;
-      case 'deeplink':
+      case "deeplink":
         return deepLinkUrl;
-      case 'contact':
+      case "contact":
         return `BEGIN:VCARD
 VERSION:3.0
 FN:${contactData.firstName} ${contactData.lastName}
@@ -443,109 +390,212 @@ END:VCARD`;
     }
   };
 
+  // ----------------------------------------------------------
+  // AUTO BRANDING LOGIC
+  // ----------------------------------------------------------
+
+  const getAppSpecificDesign = async () => {
+    const type = qrTypes.find((t) => t.id === selectedType);
+    
+    if (type?.appColor && type?.appLogo) {
+      const processedAppLogo = await processAppLogo(type.appLogo, type.appColor, designOptions.ringWidth);
+      return {
+        foregroundColor: type.appColor,
+        backgroundColor: "#FFFFFF",
+        appLogo: processedAppLogo,
+      };
+    }
+
+    const content = getQRContent().toLowerCase();
+
+    if (content.includes("whatsapp") || content.includes("wa.me")) {
+      const processedLogo = await processAppLogo(appLogos.whatsapp, "#25D366", designOptions.ringWidth);
+      return { foregroundColor: "#25D366", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("youtube")) {
+      const processedLogo = await processAppLogo(appLogos.youtube, "#FF0000", designOptions.ringWidth);
+      return { foregroundColor: "#FF0000", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("map") || content.includes("google.com/maps")) {
+      const processedLogo = await processAppLogo(appLogos.maps, "#4285F4", designOptions.ringWidth);
+      return { foregroundColor: "#4285F4", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("twitter") || content.includes("x.com")) {
+      const processedLogo = await processAppLogo(appLogos.twitter, "#1DA1F2", designOptions.ringWidth);
+      return { foregroundColor: "#1DA1F2", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("instagram")) {
+      const processedLogo = await processAppLogo(appLogos.instagram, "#E4405F", designOptions.ringWidth);
+      return { foregroundColor: "#E4405F", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("facebook")) {
+      const processedLogo = await processAppLogo(appLogos.facebook, "#1877F2", designOptions.ringWidth);
+      return { foregroundColor: "#1877F2", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("linkedin")) {
+      const processedLogo = await processAppLogo(appLogos.linkedin, "#0A66C2", designOptions.ringWidth);
+      return { foregroundColor: "#0A66C2", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("tiktok")) {
+      const processedLogo = await processAppLogo(appLogos.tiktok, "#000000", designOptions.ringWidth);
+      return { foregroundColor: "#000000", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+    if (content.includes("spotify")) {
+      const processedLogo = await processAppLogo(appLogos.spotify, "#1DB954", designOptions.ringWidth);
+      return { foregroundColor: "#1DB954", backgroundColor: "#FFFFFF", appLogo: processedLogo };
+    }
+
+    return null;
+  };
+
+  // ----------------------------------------------------------
+  // AUTO BRANDING BADGE INFO
+  // ----------------------------------------------------------
+
+  const getCurrentAppDesignInfo = () => {
+    const type = qrTypes.find((t) => t.id === selectedType);
+    const content = getQRContent().toLowerCase();
+    
+    if (type?.appColor) {
+      return {
+        color: type.appColor,
+        appName: type.label,
+        hasAutoLogo: true,
+      };
+    }
+
+    if (content.includes("whatsapp") || content.includes("wa.me"))
+      return { color: "#25D366", appName: "WhatsApp", hasAutoLogo: true };
+    if (content.includes("youtube"))
+      return { color: "#FF0000", appName: "YouTube", hasAutoLogo: true };
+    if (content.includes("map") || content.includes("google.com/maps"))
+      return { color: "#4285F4", appName: "Google Maps", hasAutoLogo: true };
+    if (content.includes("twitter") || content.includes("x.com"))
+      return { color: "#1DA1F2", appName: "Twitter", hasAutoLogo: true };
+    if (content.includes("instagram"))
+      return { color: "#E4405F", appName: "Instagram", hasAutoLogo: true };
+    if (content.includes("facebook"))
+      return { color: "#1877F2", appName: "Facebook", hasAutoLogo: true };
+    if (content.includes("linkedin"))
+      return { color: "#0A66C2", appName: "LinkedIn", hasAutoLogo: true };
+    if (content.includes("tiktok"))
+      return { color: "#000000", appName: "TikTok", hasAutoLogo: true };
+    if (content.includes("spotify"))
+      return { color: "#1DB954", appName: "Spotify", hasAutoLogo: true };
+
+    return null;
+  };
+
+  // ----------------------------------------------------------
+  // LOGO UPLOAD HANDLER
+  // ----------------------------------------------------------
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "Logo must be under 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const originalDataUrl = ev.target?.result as string;
+        setLogo(originalDataUrl);
+        
+        // Process logo to be circular with ring
+        const circularLogo = await createCircularLogoWithRing(originalDataUrl, designOptions.ringColor, designOptions.ringWidth);
+        setProcessedLogo(circularLogo);
+        
+        toast({
+          title: "Logo Added",
+          description: "Your logo has been processed with circular ring.",
+        });
+      } catch (error) {
+        console.error('Error processing logo:', error);
+        setLogo(ev.target?.result as string);
+        setProcessedLogo(ev.target?.result as string);
+        toast({
+          title: "Logo Added",
+          description: "Your custom logo has been added.",
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    setLogo(null);
+    setProcessedLogo(null);
+  };
+
+  // ----------------------------------------------------------
+  // MAIN QR GENERATION FUNCTION
+  // ----------------------------------------------------------
+
   const generateQR = async () => {
     const content = getQRContent();
+
     if (!content.trim()) {
-      setQrCode('');
+      setQrCode("");
       return;
     }
 
     try {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+      const appDesign = await getAppSpecificDesign();
 
-      // Get app-specific design if available
-      const appDesign = getAppSpecificDesign();
-      const finalDesign = appDesign ? {
-        foregroundColor: appDesign.foregroundColor,
-        backgroundColor: appDesign.backgroundColor
-      } : designOptions;
+      const fg = appDesign?.foregroundColor || designOptions.foregroundColor;
+      const bg = appDesign?.backgroundColor || designOptions.backgroundColor;
 
-      // Generate QR code at higher resolution for better quality
-      const qrSize = 400;
-      await QRCode.toCanvas(canvas, content, {
-        width: qrSize,
-        margin: 2,
-        color: {
-          dark: finalDesign.foregroundColor,
-          light: finalDesign.backgroundColor
+      // Use processed logo if available, otherwise use app logo
+      const finalLogo = processedLogo || logo || appDesign?.appLogo || "";
+
+      // UPDATE QR INSTANCE
+      qrInstanceRef.current?.update({
+        data: content,
+        dotsOptions: {
+          type: "dots",
+          color: fg,
         },
-        errorCorrectionLevel: 'H'
+        cornersSquareOptions: {
+          type: "dot",
+          color: fg,
+        },
+        cornersDotOptions: {
+          type: "dot",
+          color: fg,
+        },
+        backgroundOptions: {
+          color: bg,
+        },
+        image: finalLogo || undefined,
+        imageOptions: {
+          hideBackgroundDots: true,
+          imageSize: 0.25, // Slightly larger to accommodate ring
+          margin: 4,
+          crossOrigin: "anonymous",
+        },
       });
 
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      // RENDER QR INTO PREVIEW BOX
+      if (canvasPreviewRef.current) {
+        canvasPreviewRef.current.innerHTML = ""; // Clear old QR
+        qrInstanceRef.current?.append(canvasPreviewRef.current);
 
-      // Enable high quality rendering
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-
-      // Determine which logo to use (priority: uploaded logo > app logo > none)
-      const logoToUse = highQualityLogo || logo || appDesign?.appLogo;
-      
-     // In the generateQR function, replace the entire logo drawing section with this:
-
-if (logoToUse) {
-  const img = new Image();
-  img.onload = () => {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = logoSize / 2;
-
-    // Create circular white background for logo
-    ctx.fillStyle = finalDesign.backgroundColor;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 4, 0, 2 * Math.PI);
-    ctx.fill();
-
-    // Create circular clipping path for the logo
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.clip();
-
-    // Draw high quality logo within circular clipping
-    ctx.drawImage(img, centerX - radius, centerY - radius, logoSize, logoSize);
-    ctx.restore();
-
-    // Add a subtle border around the circular logo
-    ctx.strokeStyle = finalDesign.foregroundColor;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 2, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    // Add watermark with better font
-    ctx.font = 'bold 12px Arial';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.textAlign = 'center';
-    ctx.fillText('QRJI.com', canvas.width / 2, canvas.height - 8);
-
-    // Generate final QR code with maximum quality
-    const qrDataUrl = canvas.toDataURL('image/png', 1.0);
-    setQrCode(qrDataUrl);
-    saveToHistory(qrDataUrl);
-  };
-  img.onerror = () => {
-    // Fallback if image fails to load
-    console.error('Failed to load logo image');
-    const qrDataUrl = canvas.toDataURL('image/png', 1.0);
-    setQrCode(qrDataUrl);
-    saveToHistory(qrDataUrl);
-  };
-  img.src = logoToUse;
-} else {
-        // Add watermark
-        ctx.font = 'bold 12px Arial';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.textAlign = 'center';
-        ctx.fillText('QRJI.com', canvas.width / 2, canvas.height - 8);
-
-        const qrDataUrl = canvas.toDataURL('image/png', 1.0);
-        setQrCode(qrDataUrl);
-        saveToHistory(qrDataUrl);
+        setTimeout(async () => {
+          const dataUrl = await qrInstanceRef.current?.getRawData("png");
+          if (dataUrl) {
+            setQrCode(URL.createObjectURL(dataUrl));
+            saveToHistory(URL.createObjectURL(dataUrl));
+          }
+        }, 300);
       }
-      
     } catch (error) {
       console.error('Error generating QR code:', error);
       toast({
@@ -556,172 +606,189 @@ if (logoToUse) {
     }
   };
 
-  const saveToHistory = (qrDataUrl: string) => {
-    const content = getQRContent();
-    const history = JSON.parse(localStorage.getItem('qr-history') || '[]');
-    const newEntry = {
-      id: Date.now(),
-      text: content,
-      qrCode: qrDataUrl,
-      type: 'generated',
-      qrType: selectedType,
-      timestamp: new Date().toISOString(),
-      designOptions: designOptions,
-      hasLogo: !!logo,
-      hasAppLogo: !!getAppSpecificDesign()?.appLogo
+  // ----------------------------------------------------------
+  // UTILITY FUNCTIONS
+  // ----------------------------------------------------------
+
+  const [qrObjectUrl, setQrObjectUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (qrObjectUrl) {
+        URL.revokeObjectURL(qrObjectUrl);
+      }
     };
-    
-    const updatedHistory = [newEntry, ...history.slice(0, 9)];
-    localStorage.setItem('qr-history', JSON.stringify(updatedHistory));
+  }, [qrObjectUrl]);
+
+  // Reprocess logo when ring settings change
+  useEffect(() => {
+    const reprocessLogo = async () => {
+      if (logo) {
+        try {
+          const newProcessedLogo = await createCircularLogoWithRing(logo, designOptions.ringColor, designOptions.ringWidth);
+          setProcessedLogo(newProcessedLogo);
+        } catch (error) {
+          console.error('Error reprocessing logo:', error);
+        }
+      }
+    };
+
+    reprocessLogo();
+  }, [designOptions.ringColor, designOptions.ringWidth, logo]);
+
+  useEffect(() => {
+    setQrCode("");
+    if (qrObjectUrl) {
+      URL.revokeObjectURL(qrObjectUrl);
+      setQrObjectUrl(null);
+    }
+  }, [
+    selectedType,
+    url,
+    text,
+    phone,
+    email,
+    smsText,
+    contactData,
+    wifiData,
+    bitcoinAddress,
+    locationData,
+    eventData,
+    appStoreUrl,
+    socialUrl,
+    youtubeUrl,
+    paymentUrl,
+    cryptoAddress,
+    emailPrefilledData,
+    whatsappData,
+    meetingUrl,
+    fileUrl,
+    deepLinkUrl,
+    designOptions,
+    logo,
+  ]);
+
+  const saveToHistory = async (objectUrl?: string) => {
+    try {
+      const content = getQRContent();
+      const history = JSON.parse(localStorage.getItem("qr-history") || "[]");
+      const newEntry = {
+        id: Date.now(),
+        text: content,
+        qrType: selectedType,
+        qrObjectUrl: objectUrl || qrObjectUrl,
+        timestamp: new Date().toISOString(),
+        designOptions,
+        hasLogo: !!logo,
+        appAutoBrand: !!getCurrentAppDesignInfo(),
+      };
+      const updated = [newEntry, ...history.slice(0, 9)];
+      localStorage.setItem("qr-history", JSON.stringify(updated));
+    } catch (err) {
+      console.error("Failed to save history", err);
+    }
   };
 
-  // Rest of the functions remain exactly the same...
   const shareToSocial = (platform: string) => {
-    if (!qrCode) return;
-    
-    const text = encodeURIComponent('Check out my QR code!');
+    const text = encodeURIComponent("Check out my QR code");
     const url = encodeURIComponent(window.location.href);
-    
-    let shareUrl = '';
+
+    let shareUrl = "";
     switch (platform) {
-      case 'twitter':
+      case "twitter":
         shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
         break;
-      case 'linkedin':
+      case "linkedin":
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
         break;
-      case 'facebook':
+      case "facebook":
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
         break;
     }
-    
-    if (shareUrl) {
-      window.open(shareUrl, '_blank', 'width=600,height=400');
-    }
-  };
 
-  const generateBatchQRs = async () => {
-    if (!csvFile) return;
-    
-    const text = await csvFile.text();
-    const lines = text.split('\n').filter(line => line.trim());
-    const qrCodes: string[] = [];
-    
-    for (const line of lines) {
-      const [url] = line.split(',');
-      if (url && url.trim()) {
-        try {
-          const canvas = document.createElement('canvas');
-          await QRCode.toCanvas(canvas, url.trim(), {
-            width: 300,
-            margin: 2,
-            color: {
-              dark: designOptions.foregroundColor,
-              light: designOptions.backgroundColor
-            }
-          });
-          qrCodes.push(canvas.toDataURL());
-        } catch (error) {
-          console.error('Error generating QR for:', url, error);
-        }
-      }
-    }
-    
-    toast({
-      title: "Batch Generation Complete",
-      description: `Generated ${qrCodes.length} QR codes`
-    });
-  };
-
-  const getEmbedCode = () => {
-    if (!qrCode) return '';
-    
-    return `<div style="text-align: center;">
-  <img src="${qrCode}" alt="QR Code" style="max-width: 200px;" />
-  <p>Generated with <a href="${window.location.origin}">QR Generator</a></p>
-</div>`;
+    if (shareUrl) window.open(shareUrl, "_blank", "width=600,height=400");
   };
 
   const downloadQR = () => {
-    if (!qrCode) return;
-    
-    const link = document.createElement('a');
-    link.href = qrCode;
-    link.download = `qr-code-${selectedType}-${Date.now()}.png`;
-    link.click();
-    
-    toast({
-      title: "Success",
-      description: "High-quality QR code downloaded successfully"
-    });
+    const blobUrl = qrObjectUrl || qrCode;
+    if (!blobUrl) return;
+
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = `qr-${selectedType}-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    toast({ title: "Downloaded", description: "QR code downloaded" });
   };
 
   const copyToClipboard = async () => {
-    if (!qrCode) return;
-    
+    const blobUrl = qrObjectUrl || qrCode;
+    if (!blobUrl) return;
+
     try {
-      const response = await fetch(qrCode);
-      const blob = await response.blob();
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]);
-      
-      toast({
-        title: "Success",
-        description: "QR code copied to clipboard"
-      });
-    } catch (error) {
-      toast({
-        title: "Success",
-        description: "QR code copied to clipboard"
-      });
+      const resp = await fetch(blobUrl);
+      const blob = await resp.blob();
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      toast({ title: "Copied", description: "QR code copied to clipboard" });
+    } catch (err) {
+      try {
+        const resp = await fetch(blobUrl);
+        const blob = await resp.blob();
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const dataUrl = e.target?.result as string;
+          await navigator.clipboard.writeText(dataUrl);
+          toast({ title: "Copied", description: "QR code data URL copied to clipboard" });
+        };
+        reader.readAsDataURL(blob);
+      } catch (e) {
+        toast({ title: "Error", description: "Unable to copy QR to clipboard", variant: "destructive" });
+      }
     }
   };
 
   const printQR = () => {
-    if (!qrCode) return;
-    
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head><title>QR Code</title></head>
-          <body style="text-align: center; padding: 20px;">
-            <h2>QR Code - ${selectedType.toUpperCase()}</h2>
-            <img src="${qrCode}" style="max-width: 100%;" />
-            <p>Generated: ${new Date().toLocaleDateString()}</p>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
+    const blobUrl = qrObjectUrl || qrCode;
+    if (!blobUrl) return;
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(`
+      <html>
+        <head><title>Print QR</title></head>
+        <body style="display:flex;align-items:center;justify-content:center;height:100vh;">
+          <img src="${blobUrl}" style="max-width:90%;height:auto;" />
+        </body>
+      </html>
+    `);
+    w.document.close();
+    w.focus();
+    w.print();
   };
 
-  // Get current app design info for display
-  const getCurrentAppDesignInfo = () => {
-    const appDesign = getAppSpecificDesign();
-    if (appDesign) {
-      const qrType = qrTypes.find(t => t.id === selectedType);
-      return {
-        color: appDesign.foregroundColor,
-        appName: qrType?.label || 'App',
-        hasAutoLogo: true
-      };
-    }
-    return null;
+  const getEmbedCode = () => {
+    const src = qrObjectUrl || qrCode;
+    if (!src) return "";
+    return `<div style="text-align:center;">
+  <img src="${src}" alt="QR Code" style="max-width:200px;" />
+  <p>Generated with QR Generator</p>
+</div>`;
   };
 
-  const renderContentInput = () => {
+  // ----------------------------------------------------------
+  // RENDER DYNAMIC INPUT FIELDS
+  // ----------------------------------------------------------
+
+ const renderContentInput = () => {
   const appDesignInfo = getCurrentAppDesignInfo();
-  
+
   switch (selectedType) {
-    case 'url':
+    case "url":
       return (
         <div className="space-y-2">
-          <Label htmlFor="url" className="text-dark-panel-foreground">Website URL</Label>
+          <Label className="text-dark-panel-foreground">Website URL</Label>
           <Input
-            id="url"
             placeholder="https://example.com"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -729,13 +796,13 @@ if (logoToUse) {
           />
           {appDesignInfo && (
             <p className="text-xs text-green-500">
-              ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo
+              ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo with ring
             </p>
           )}
         </div>
       );
-    
-    case 'text':
+
+    case "text":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">Plain Text</Label>
@@ -748,7 +815,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'phone':
+    case "phone":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">Phone Number</Label>
@@ -762,7 +829,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'email':
+    case "email":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">Email Address</Label>
@@ -775,7 +842,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'sms':
+    case "sms":
       return (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -799,7 +866,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'wifi':
+    case "wifi":
       return (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -836,7 +903,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'bitcoin':
+    case "bitcoin":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">Bitcoin Address</Label>
@@ -850,7 +917,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'contact':
+    case "contact":
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -912,7 +979,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'location':
+    case "location":
       return (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -943,12 +1010,12 @@ if (logoToUse) {
             />
           </div>
           <p className="text-xs text-green-500">
-            ✓ Using Google Maps brand colors and logo automatically
+            ✓ Using Google Maps brand colors and logo with ring automatically
           </p>
         </div>
       );
 
-    case 'event':
+    case "event":
       return (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -1001,7 +1068,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'appstore':
+    case "appstore":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">App Store URL</Label>
@@ -1015,7 +1082,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'social':
+    case "social":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">Social Media Profile</Label>
@@ -1028,13 +1095,13 @@ if (logoToUse) {
           <p className="text-xs text-muted-foreground">Instagram, Twitter, TikTok, LinkedIn, etc.</p>
           {appDesignInfo && (
             <p className="text-xs text-green-500">
-              ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo
+              ✓ Auto-detected {appDesignInfo.appName} - Using brand colors and logo with ring
             </p>
           )}
         </div>
       );
 
-    case 'youtube':
+    case "youtube":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">YouTube Video/Channel</Label>
@@ -1046,12 +1113,12 @@ if (logoToUse) {
           />
           <p className="text-xs text-muted-foreground">YouTube video or channel URL</p>
           <p className="text-xs text-green-500">
-            ✓ Using YouTube brand colors and logo automatically
+            ✓ Using YouTube brand colors and logo with ring automatically
           </p>
         </div>
       );
 
-    case 'payment':
+    case "payment":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">Payment URL</Label>
@@ -1065,7 +1132,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'crypto':
+    case "crypto":
       return (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -1094,7 +1161,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'emailprefilled':
+    case "emailprefilled":
       return (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -1127,7 +1194,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'whatsapp':
+    case "whatsapp":
       return (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -1150,12 +1217,12 @@ if (logoToUse) {
             />
           </div>
           <p className="text-xs text-green-500">
-            ✓ Using WhatsApp brand colors and logo automatically
+            ✓ Using WhatsApp brand colors and logo with ring automatically
           </p>
         </div>
       );
 
-    case 'meeting':
+    case "meeting":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">Meeting URL</Label>
@@ -1169,7 +1236,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'file':
+    case "file":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">File URL</Label>
@@ -1183,7 +1250,7 @@ if (logoToUse) {
         </div>
       );
 
-    case 'deeplink':
+    case "deeplink":
       return (
         <div className="space-y-2">
           <Label className="text-dark-panel-foreground">App Deep Link</Label>
@@ -1205,6 +1272,10 @@ if (logoToUse) {
       );
   }
 };
+
+  // ----------------------------------------------------------
+  // FINAL JSX RETURN
+  // ----------------------------------------------------------
 
   return (
     <div className="min-h-screen bg-background">
@@ -1234,7 +1305,7 @@ if (logoToUse) {
           </h2>
           <p className="text-muted-foreground max-w-3xl mx-auto text-lg leading-relaxed">
             Generate QR codes for WiFi networks, Bitcoin wallets, contact cards, URLs, and more. 
-            Add your logo, customize colors, and download instantly. No sign-up required.
+            Add your logo with circular ring, customize colors, and download instantly.
           </p>
           <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -1247,7 +1318,7 @@ if (logoToUse) {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-              <span>Multiple Formats</span>
+              <span>Circular Logo Rings</span>
             </div>
           </div>
         </div>
@@ -1293,108 +1364,101 @@ if (logoToUse) {
               {renderContentInput()}
             </div>
 
-           // In the Logo Upload Section, replace the current logo display code with this:
-
-{/* Logo Upload Section */}
-<div className="mb-6">
-  <h3 className="text-lg font-semibold text-dark-panel-foreground mb-4 flex items-center gap-2">
-    <Upload className="h-5 w-5" />
-    Custom Logo (Optional)
-  </h3>
-  
-  {!logo ? (
-    <div className="border-2 border-dashed border-dark-border rounded-lg p-4 text-center">
-      <Input
-        type="file"
-        accept="image/*"
-        onChange={handleLogoUpload}
-        className="hidden"
-        id="logo-upload"
-      />
-      <Label 
-        htmlFor="logo-upload" 
-        className="cursor-pointer text-primary hover:text-primary/80"
-      >
-        Click to upload custom logo
-      </Label>
-      <p className="text-xs text-muted-foreground mt-1">
-        PNG, JPG up to 5MB (High Quality)
-      </p>
-      {getCurrentAppDesignInfo() && (
-        <p className="text-xs text-green-500 mt-2">
-          ✓ App logo will be used automatically unless you upload a custom one
-        </p>
-      )}
-    </div>
-  ) : (
-    <div className="relative">
-      <div className="flex items-center gap-3 p-3 border border-dark-border rounded-lg">
-        {/* Changed from square to circle */}
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-dark-input flex items-center justify-center">
-          <img 
-            src={logo} 
-            alt="Logo" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="flex-1">
-          <p className="text-sm font-medium text-dark-panel-foreground">Custom logo uploaded</p>
-          <div className="flex items-center gap-2 mt-1">
-            <Label htmlFor="logo-size" className="text-xs text-muted-foreground">
-              Size:
-            </Label>
-            <Input
-              id="logo-size"
-              type="range"
-              min="40"
-              max="100"
-              value={logoSize}
-              onChange={(e) => setLogoSize(parseInt(e.target.value))}
-              className="w-20"
-            />
-            <span className="text-xs text-muted-foreground">{logoSize}px</span>
-          </div>
-          <p className="text-xs text-green-500 mt-1">✓ High quality processing enabled</p>
-        </div>
-        <Button
-          onClick={removeLogo}
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-red-600"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  )}
-</div>
-
-            {/* Design Info Panel */}
-            {getCurrentAppDesignInfo() && (
-              <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-blue-300">
-                  <div 
-                    className="w-4 h-4 rounded"
-                    style={{ backgroundColor: getCurrentAppDesignInfo()?.color }}
-                  />
-                  <span>Using {getCurrentAppDesignInfo()?.appName} brand colors and logo</span>
-                </div>
-              </div>
-            )}
-
-            {/* Generate Button */}
+            {/* Logo Upload Section */}
             <div className="mb-6">
-              <Button
-                onClick={generateQR}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
-                disabled={!getQRContent().trim()}
-              >
-                <Grid3X3 className="h-5 w-5 mr-2" />
-                Generate QR Code
-              </Button>
+              <h3 className="text-lg font-semibold text-dark-panel-foreground mb-4 flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Custom Logo (Optional)
+              </h3>
+              
+              {!logo ? (
+                <div className="border-2 border-dashed border-dark-border rounded-lg p-4 text-center">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    id="logo-upload"
+                  />
+                  <Label 
+                    htmlFor="logo-upload" 
+                    className="cursor-pointer text-primary hover:text-primary/80"
+                  >
+                    Click to upload custom logo
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PNG, JPG up to 5MB (Automatically made circular with ring)
+                  </p>
+                  {getCurrentAppDesignInfo() && (
+                    <p className="text-xs text-green-500 mt-2">
+                      ✓ App logo will be used automatically unless you upload a custom one
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="flex items-center gap-3 p-3 border border-dark-border rounded-lg">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-dark-input flex items-center justify-center border-2" style={{ borderColor: designOptions.ringColor }}>
+                      <img 
+                        src={logo} 
+                        alt="Logo" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-dark-panel-foreground">Custom logo uploaded</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Logo will be automatically centered with circular ring
+                      </p>
+                      <p className="text-xs text-green-500 mt-1">✓ Circular ring styling applied</p>
+                    </div>
+                    <Button
+                      onClick={removeLogo}
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-red-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Pro Design Panel */}
+            {/* Ring Settings */}
+            {/* <div className="mb-6">
+              <h3 className="text-lg font-semibold text-dark-panel-foreground mb-4 flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Logo Ring Settings
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-dark-panel-foreground">Ring Color</Label>
+                    <Input
+                      type="color"
+                      value={designOptions.ringColor}
+                      onChange={(e) => setDesignOptions({...designOptions, ringColor: e.target.value})}
+                      className="h-10 w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-dark-panel-foreground">Ring Width: {designOptions.ringWidth}px</Label>
+                    <Input
+                      type="range"
+                      min="1"
+                      max="8"
+                      value={designOptions.ringWidth}
+                      onChange={(e) => setDesignOptions({...designOptions, ringWidth: parseInt(e.target.value)})}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div> */}
+
+            {/* Design Panel */}
             <div className="mb-6">
               <div className="mt-4 p-4 bg-dark-input rounded-lg space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -1425,9 +1489,33 @@ if (logoToUse) {
               </div>
             </div>
 
-            {/* Hidden canvases for QR generation and logo processing */}
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
-            <canvas ref={logoCanvasRef} style={{ display: 'none' }} />
+            {/* Design Info Panel */}
+            {getCurrentAppDesignInfo() && (
+              <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-blue-300">
+                  <div 
+                    className="w-4 h-4 rounded"
+                    style={{ backgroundColor: getCurrentAppDesignInfo()?.color }}
+                  />
+                  <span>Using {getCurrentAppDesignInfo()?.appName} brand colors and circular logo with ring</span>
+                </div>
+              </div>
+            )}
+
+            {/* Generate Button */}
+            <div className="mb-6">
+              <Button
+                onClick={generateQR}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
+                disabled={!getQRContent().trim()}
+              >
+                <Grid3X3 className="h-5 w-5 mr-2" />
+                Generate QR Code
+              </Button>
+            </div>
+
+            {/* Hidden preview container */}
+            <div ref={canvasPreviewRef} style={{ display: "none" }} />
           </div>
 
           {/* Right Panel - Preview */}
@@ -1444,8 +1532,8 @@ if (logoToUse) {
                   />
                   <div className="text-sm text-gray-600">
                     {selectedType.toUpperCase()} QR Code 
-                    {logo && ' (with Custom Logo)'}
-                    {getCurrentAppDesignInfo() && !logo && ' (with App Logo)'}
+                    {logo && ' (with Custom Logo + Ring)'}
+                    {getCurrentAppDesignInfo() && !logo && ' (with App Logo + Ring)'}
                   </div>
                 </div>
               ) : (
