@@ -8,6 +8,7 @@
     <meta name="description" content="Generate custom QR codes instantly with qrji. Add logos, choose colors, track scans, and manage dynamic links — all in one powerful QR platform." />
     <meta name="keywords" content="QR code generator, custom QR codes, QR tracker, dynamic QR, QR analytics, QR code with logo, free QR generator" />
     <meta name="author" content="qrji" />
+    <meta name="robots" content="index, follow" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/download.svg" />
@@ -16,19 +17,28 @@
     
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="/download.svg" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="qrji" />
 
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="nKdmFXDlGXojyuFzAgCUPFZN5PkiAuuts4bT8MS0Fns" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="qrji" />
     <meta property="og:url" content="https://qrji.netlify.app/" />
     <meta property="og:title" content="qrji — Create, Customize & Track Professional QR Codes" />
     <meta property="og:description" content="Generate custom QR codes instantly with qrji. Add logos, choose colors, track scans, and manage dynamic links — all in one powerful QR platform." />
     <meta property="og:image" content="https://qrji.netlify.app/preview-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@qrji" />
+    <meta name="twitter:creator" content="@qrji" />
     <meta name="twitter:url" content="https://qrji.netlify.app/" />
     <meta name="twitter:title" content="qrji — Create, Customize & Track Professional QR Codes" />
     <meta name="twitter:description" content="Generate custom QR codes instantly with qrji. Add logos, choose colors, track scans, and manage dynamic links — all in one powerful QR platform." />
@@ -37,28 +47,51 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#000000" />
-    <link rel="apple-touch-icon" href="/download.svg" />
+    <meta name="msapplication-TileColor" content="#000000" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- Schema.org Structured Data for SEO -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
+      "@type": "WebApplication",
       "name": "qrji — Elite Pro QR Code Generator",
       "url": "https://qrji.netlify.app/",
       "description": "Generate custom QR codes instantly with qrji. Add logos, choose colors, track scans, and manage dynamic links — all in one professional QR platform.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "permissions": "clipboard-write",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
       "publisher": {
         "@type": "Organization",
         "name": "qrji",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://qrji.netlify.app/preview-image.png"
+          "url": "https://qrji.netlify.app/download.svg",
+          "width": "512",
+          "height": "512"
         }
       },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://qrji.netlify.app/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
+      "featureList": [
+        "QR Code Generation",
+        "Custom Styling",
+        "Logo Integration",
+        "Scan Analytics",
+        "Dynamic URL Management"
+      ],
+      "screenshot": {
+        "@type": "ImageObject",
+        "url": "https://qrji.netlify.app/preview-image.png",
+        "width": "1280",
+        "height": "720"
       },
       "sameAs": [
         "https://twitter.com/",
@@ -71,6 +104,9 @@
   </head>
 
   <body>
+    <noscript>
+      <strong>We're sorry but qrji doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

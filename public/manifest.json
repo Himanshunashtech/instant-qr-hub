@@ -1,26 +1,41 @@
 {
-  "name": "qrji",
+  "name": "qrji — Create, Customize & Track Professional QR Codes",
   "short_name": "qrji",
-  "description": "Professional QR Code Generator with advanced features",
+  "description": "Generate custom QR codes instantly with qrji. Add logos, choose colors, track scans, and manage dynamic links — all in one powerful QR platform.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "/download.svg",
-      "sizes": "any",
-      "type": "image/x-icon"
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/download.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
   "screenshots": [
     {
-      "src": "/placeholder.svg",
+      "src": "/preview-image.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "qrji QR Code Generator Dashboard"
+    },
+    {
+      "src": "/preview-image.png", 
       "sizes": "540x720",
-      "type": "image/svg+xml",
-      "form_factor": "narrow"
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "qrji Mobile QR Generator"
     }
   ]
 }
