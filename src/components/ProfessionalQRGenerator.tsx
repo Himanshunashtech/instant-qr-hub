@@ -586,32 +586,50 @@ END:VCARD`;
 
       const fg = appDesign?.foregroundColor || designOptions.foregroundColor;
       const bg = appDesign?.backgroundColor || designOptions.backgroundColor;
+      const eye = designOptions.useEyeColor ? designOptions.eyeColor : fg;
 
       // Use processed logo if available, otherwise use app logo
       const finalLogo = processedLogo || logo || appDesign?.appLogo || "";
 
-      // UPDATE QR INSTANCE
+      // Build dots options (with optional gradient)
+      const dotsOptions: any = { type: designOptions.dotStyle, color: fg };
+      if (designOptions.gradientType !== "none" && !appDesign) {
+        dotsOptions.gradient = {
+          type: designOptions.gradientType,
+          rotation: (designOptions.gradientRotation * Math.PI) / 180,
+          colorStops: [
+            { offset: 0, color: fg },
+            { offset: 1, color: designOptions.gradientColor },
+          ],
+        };
+      }
+
+      const backgroundOptions: any = {
+        color: designOptions.transparentBackground ? "transparent" : bg,
+      };
+
       qrInstanceRef.current?.update({
         data: content,
-        dotsOptions: {
-          type: "dots",
-          color: fg,
+        width: designOptions.size,
+        height: designOptions.size,
+        margin: designOptions.margin,
+        qrOptions: {
+          errorCorrectionLevel: designOptions.errorCorrection,
         },
+        dotsOptions,
         cornersSquareOptions: {
-          type: "dot",
-          color: fg,
+          type: designOptions.cornerSquareStyle,
+          color: eye,
         },
         cornersDotOptions: {
-          type: "dot",
-          color: fg,
+          type: designOptions.cornerDotStyle,
+          color: eye,
         },
-        backgroundOptions: {
-          color: bg,
-        },
+        backgroundOptions,
         image: finalLogo || undefined,
         imageOptions: {
           hideBackgroundDots: true,
-          imageSize: 0.25, // Slightly larger to accommodate ring
+          imageSize: 0.25,
           margin: 4,
           crossOrigin: "anonymous",
         },
@@ -619,14 +637,16 @@ END:VCARD`;
 
       // RENDER QR INTO PREVIEW BOX
       if (canvasPreviewRef.current) {
-        canvasPreviewRef.current.innerHTML = ""; // Clear old QR
+        canvasPreviewRef.current.innerHTML = "";
         qrInstanceRef.current?.append(canvasPreviewRef.current);
 
         setTimeout(async () => {
           const dataUrl = await qrInstanceRef.current?.getRawData("png");
           if (dataUrl) {
-            setQrCode(URL.createObjectURL(dataUrl));
-            saveToHistory(URL.createObjectURL(dataUrl));
+            const objUrl = URL.createObjectURL(dataUrl as Blob);
+            setQrCode(objUrl);
+            setQrObjectUrl(objUrl);
+            saveToHistory(objUrl);
           }
         }, 300);
       }
