@@ -16,17 +16,41 @@ import {
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
+import { qrTemplates } from "./qrTemplates";
 
 // ----------------------------------------------------------
 // TYPES
 // ----------------------------------------------------------
 
+type DotType =
+  | "square"
+  | "rounded"
+  | "dots"
+  | "classy"
+  | "classy-rounded"
+  | "extra-rounded";
+type CornerSquareType = "square" | "dot" | "extra-rounded";
+type CornerDotType = "square" | "dot";
+type ErrorCorrectionLevel = "L" | "M" | "Q" | "H";
+type GradientType = "none" | "linear" | "radial";
+
 interface QRDesignOptions {
   foregroundColor: string;
   backgroundColor: string;
-  dotStyle: "square" | "round" | "dots";
-  ringColor: string; // NEW: Color for the ring around logo
-  ringWidth: number; // NEW: Width of the ring in pixels
+  dotStyle: DotType;
+  cornerSquareStyle: CornerSquareType;
+  cornerDotStyle: CornerDotType;
+  eyeColor: string;
+  useEyeColor: boolean;
+  gradientType: GradientType;
+  gradientColor: string;
+  gradientRotation: number; // 0-360
+  transparentBackground: boolean;
+  size: number; // 256-2048
+  margin: number; // 0-40 (quiet zone)
+  errorCorrection: ErrorCorrectionLevel;
+  ringColor: string;
+  ringWidth: number;
 }
 
 interface QRType {
@@ -210,9 +234,20 @@ export const ProfessionalQRGenerator = () => {
   const [designOptions, setDesignOptions] = useState<QRDesignOptions>({
     foregroundColor: "#000000",
     backgroundColor: "#FFFFFF",
-    dotStyle: "dots",
-    ringColor: "#000000", // Default ring color
-    ringWidth: 3, // Default ring width in pixels
+    dotStyle: "extra-rounded",
+    cornerSquareStyle: "extra-rounded",
+    cornerDotStyle: "dot",
+    eyeColor: "#000000",
+    useEyeColor: false,
+    gradientType: "none",
+    gradientColor: "#4f46e5",
+    gradientRotation: 0,
+    transparentBackground: false,
+    size: 512,
+    margin: 8,
+    errorCorrection: "H",
+    ringColor: "#000000",
+    ringWidth: 3,
   });
 
   // ------------------------------------------
@@ -552,32 +587,50 @@ END:VCARD`;
 
       const fg = appDesign?.foregroundColor || designOptions.foregroundColor;
       const bg = appDesign?.backgroundColor || designOptions.backgroundColor;
+      const eye = designOptions.useEyeColor ? designOptions.eyeColor : fg;
 
       // Use processed logo if available, otherwise use app logo
       const finalLogo = processedLogo || logo || appDesign?.appLogo || "";
 
-      // UPDATE QR INSTANCE
+      // Build dots options (with optional gradient)
+      const dotsOptions: any = { type: designOptions.dotStyle, color: fg };
+      if (designOptions.gradientType !== "none" && !appDesign) {
+        dotsOptions.gradient = {
+          type: designOptions.gradientType,
+          rotation: (designOptions.gradientRotation * Math.PI) / 180,
+          colorStops: [
+            { offset: 0, color: fg },
+            { offset: 1, color: designOptions.gradientColor },
+          ],
+        };
+      }
+
+      const backgroundOptions: any = {
+        color: designOptions.transparentBackground ? "transparent" : bg,
+      };
+
       qrInstanceRef.current?.update({
         data: content,
-        dotsOptions: {
-          type: "dots",
-          color: fg,
+        width: designOptions.size,
+        height: designOptions.size,
+        margin: designOptions.margin,
+        qrOptions: {
+          errorCorrectionLevel: designOptions.errorCorrection,
         },
+        dotsOptions,
         cornersSquareOptions: {
-          type: "dot",
-          color: fg,
+          type: designOptions.cornerSquareStyle,
+          color: eye,
         },
         cornersDotOptions: {
-          type: "dot",
-          color: fg,
+          type: designOptions.cornerDotStyle,
+          color: eye,
         },
-        backgroundOptions: {
-          color: bg,
-        },
+        backgroundOptions,
         image: finalLogo || undefined,
         imageOptions: {
           hideBackgroundDots: true,
-          imageSize: 0.25, // Slightly larger to accommodate ring
+          imageSize: 0.25,
           margin: 4,
           crossOrigin: "anonymous",
         },
@@ -585,14 +638,16 @@ END:VCARD`;
 
       // RENDER QR INTO PREVIEW BOX
       if (canvasPreviewRef.current) {
-        canvasPreviewRef.current.innerHTML = ""; // Clear old QR
+        canvasPreviewRef.current.innerHTML = "";
         qrInstanceRef.current?.append(canvasPreviewRef.current);
 
         setTimeout(async () => {
           const dataUrl = await qrInstanceRef.current?.getRawData("png");
           if (dataUrl) {
-            setQrCode(URL.createObjectURL(dataUrl));
-            saveToHistory(URL.createObjectURL(dataUrl));
+            const objUrl = URL.createObjectURL(dataUrl as Blob);
+            setQrCode(objUrl);
+            setQrObjectUrl(objUrl);
+            saveToHistory(objUrl);
           }
         }, 300);
       }
@@ -709,18 +764,22 @@ END:VCARD`;
     if (shareUrl) window.open(shareUrl, "_blank", "width=600,height=400");
   };
 
-  const downloadQR = () => {
-    const blobUrl = qrObjectUrl || qrCode;
-    if (!blobUrl) return;
-
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = `qr-${selectedType}-${Date.now()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    toast({ title: "Downloaded", description: "QR code downloaded" });
+  const downloadQR = async (format: "png" | "jpeg" | "svg" | "webp" = "png") => {
+    try {
+      const blob = (await qrInstanceRef.current?.getRawData(format)) as Blob | undefined;
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-${selectedType}-${Date.now()}.${format === "jpeg" ? "jpg" : format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast({ title: "Downloaded", description: `QR code saved as ${format.toUpperCase()}` });
+    } catch (err) {
+      toast({ title: "Error", description: "Download failed", variant: "destructive" });
+    }
   };
 
   const copyToClipboard = async () => {
@@ -1458,22 +1517,56 @@ END:VCARD`;
               </div>
             </div> */}
 
+            {/* Templates Gallery */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-dark-panel-foreground mb-3 flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Style Templates
+              </h3>
+              <div className="grid grid-cols-5 gap-2">
+                {qrTemplates.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => setDesignOptions({ ...designOptions, ...tpl.patch })}
+                    title={`${tpl.name} — ${tpl.description}`}
+                    className="group flex flex-col items-center gap-1 p-2 rounded-lg bg-dark-input hover:bg-dark-border transition-colors"
+                  >
+                    <div
+                      className="w-10 h-10 rounded-md flex items-center justify-center border border-dark-border"
+                      style={{ background: tpl.preview.bg }}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full"
+                        style={{
+                          background: tpl.preview.accent
+                            ? `linear-gradient(135deg, ${tpl.preview.fg}, ${tpl.preview.accent})`
+                            : tpl.preview.fg,
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-dark-panel-foreground truncate w-full text-center">
+                      {tpl.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Design Panel */}
             <div className="mb-6">
               <div className="mt-4 p-4 bg-dark-input rounded-lg space-y-4">
+                {/* Colors */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-dark-panel-foreground">Foreground</Label>
                     <Input
                       type="color"
                       value={designOptions.foregroundColor}
-                      onChange={(e) => setDesignOptions({...designOptions, foregroundColor: e.target.value})}
+                      onChange={(e) => setDesignOptions({ ...designOptions, foregroundColor: e.target.value })}
                       className="h-10 w-full"
                     />
                     {getCurrentAppDesignInfo() && (
-                      <p className="text-xs text-yellow-500">
-                        ⚠ Overridden by app colors
-                      </p>
+                      <p className="text-xs text-yellow-500">⚠ Overridden by app colors</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -1481,9 +1574,158 @@ END:VCARD`;
                     <Input
                       type="color"
                       value={designOptions.backgroundColor}
-                      onChange={(e) => setDesignOptions({...designOptions, backgroundColor: e.target.value})}
+                      onChange={(e) => setDesignOptions({ ...designOptions, backgroundColor: e.target.value })}
                       className="h-10 w-full"
+                      disabled={designOptions.transparentBackground}
                     />
+                  </div>
+                </div>
+
+                {/* Dot style + Corner styles */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Dot Shape</Label>
+                    <select
+                      value={designOptions.dotStyle}
+                      onChange={(e) => setDesignOptions({ ...designOptions, dotStyle: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="square">Square</option>
+                      <option value="rounded">Rounded</option>
+                      <option value="dots">Dots</option>
+                      <option value="classy">Classy</option>
+                      <option value="classy-rounded">Classy Rounded</option>
+                      <option value="extra-rounded">Extra Rounded</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Eye Frame</Label>
+                    <select
+                      value={designOptions.cornerSquareStyle}
+                      onChange={(e) => setDesignOptions({ ...designOptions, cornerSquareStyle: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="square">Square</option>
+                      <option value="dot">Dot</option>
+                      <option value="extra-rounded">Extra Rounded</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Eye Ball</Label>
+                    <select
+                      value={designOptions.cornerDotStyle}
+                      onChange={(e) => setDesignOptions({ ...designOptions, cornerDotStyle: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="square">Square</option>
+                      <option value="dot">Dot</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Eye color toggle */}
+                <div className="grid grid-cols-2 gap-4 items-end">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={designOptions.useEyeColor}
+                        onChange={(e) => setDesignOptions({ ...designOptions, useEyeColor: e.target.checked })}
+                      />
+                      Custom Eye Color
+                    </Label>
+                    <Input
+                      type="color"
+                      value={designOptions.eyeColor}
+                      onChange={(e) => setDesignOptions({ ...designOptions, eyeColor: e.target.value })}
+                      className="h-10 w-full"
+                      disabled={!designOptions.useEyeColor}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={designOptions.transparentBackground}
+                        onChange={(e) => setDesignOptions({ ...designOptions, transparentBackground: e.target.checked })}
+                      />
+                      Transparent Background
+                    </Label>
+                  </div>
+                </div>
+
+                {/* Gradient */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Gradient</Label>
+                    <select
+                      value={designOptions.gradientType}
+                      onChange={(e) => setDesignOptions({ ...designOptions, gradientType: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="none">None</option>
+                      <option value="linear">Linear</option>
+                      <option value="radial">Radial</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Gradient Color</Label>
+                    <Input
+                      type="color"
+                      value={designOptions.gradientColor}
+                      onChange={(e) => setDesignOptions({ ...designOptions, gradientColor: e.target.value })}
+                      className="h-10 w-full"
+                      disabled={designOptions.gradientType === "none"}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">
+                      Angle: {designOptions.gradientRotation}°
+                    </Label>
+                    <Input
+                      type="range"
+                      min={0}
+                      max={360}
+                      value={designOptions.gradientRotation}
+                      onChange={(e) => setDesignOptions({ ...designOptions, gradientRotation: parseInt(e.target.value) })}
+                      className="w-full"
+                      disabled={designOptions.gradientType !== "linear"}
+                    />
+                  </div>
+                </div>
+
+                {/* Size + Margin + EC */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Size: {designOptions.size}px</Label>
+                    <Input
+                      type="range" min={256} max={2048} step={64}
+                      value={designOptions.size}
+                      onChange={(e) => setDesignOptions({ ...designOptions, size: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Quiet Zone: {designOptions.margin}</Label>
+                    <Input
+                      type="range" min={0} max={40} step={1}
+                      value={designOptions.margin}
+                      onChange={(e) => setDesignOptions({ ...designOptions, margin: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Error Correction</Label>
+                    <select
+                      value={designOptions.errorCorrection}
+                      onChange={(e) => setDesignOptions({ ...designOptions, errorCorrection: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="L">Low (~7%)</option>
+                      <option value="M">Medium (~15%)</option>
+                      <option value="Q">Quartile (~25%)</option>
+                      <option value="H">High (~30%) — recommended</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -1549,12 +1791,38 @@ END:VCARD`;
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <Button
-                    onClick={downloadQR}
+                    onClick={() => downloadQR("png")}
                     variant="outline"
                     className="flex flex-col items-center gap-1 h-auto py-3"
                   >
                     <Download className="h-5 w-5" />
-                    <span className="text-xs">Download</span>
+                    <span className="text-xs">PNG</span>
+                  </Button>
+                  <Button
+                    onClick={() => downloadQR("jpeg")}
+                    variant="outline"
+                    className="flex flex-col items-center gap-1 h-auto py-3"
+                  >
+                    <Download className="h-5 w-5" />
+                    <span className="text-xs">JPG</span>
+                  </Button>
+                  <Button
+                    onClick={() => downloadQR("svg")}
+                    variant="outline"
+                    className="flex flex-col items-center gap-1 h-auto py-3"
+                  >
+                    <Download className="h-5 w-5" />
+                    <span className="text-xs">SVG</span>
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    onClick={() => downloadQR("webp")}
+                    variant="outline"
+                    className="flex flex-col items-center gap-1 h-auto py-3"
+                  >
+                    <Download className="h-5 w-5" />
+                    <span className="text-xs">WebP</span>
                   </Button>
                   <Button
                     onClick={copyToClipboard}

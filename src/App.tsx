@@ -10,7 +10,6 @@ import { TermsOfService } from "./pages/TermsOfService";
 
 
 import { Footer } from "./components/Footer";
-import { Contact } from "./pages/contact";
 
 import { ContactUs } from "./pages/ContactUs";
 import { PrivacyQuestions } from "./pages/PrivacyQuestions";
@@ -31,7 +30,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path ="/disclaimer" element={<Disclaimer/>}/>
-              <Route path="/contact" element={< Contact/>} />
+              
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/contact" element={<ContactUs />} />
