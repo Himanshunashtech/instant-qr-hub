@@ -1791,12 +1791,38 @@ END:VCARD`;
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <Button
-                    onClick={downloadQR}
+                    onClick={() => downloadQR("png")}
                     variant="outline"
                     className="flex flex-col items-center gap-1 h-auto py-3"
                   >
                     <Download className="h-5 w-5" />
-                    <span className="text-xs">Download</span>
+                    <span className="text-xs">PNG</span>
+                  </Button>
+                  <Button
+                    onClick={() => downloadQR("jpeg")}
+                    variant="outline"
+                    className="flex flex-col items-center gap-1 h-auto py-3"
+                  >
+                    <Download className="h-5 w-5" />
+                    <span className="text-xs">JPG</span>
+                  </Button>
+                  <Button
+                    onClick={() => downloadQR("svg")}
+                    variant="outline"
+                    className="flex flex-col items-center gap-1 h-auto py-3"
+                  >
+                    <Download className="h-5 w-5" />
+                    <span className="text-xs">SVG</span>
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    onClick={() => downloadQR("webp")}
+                    variant="outline"
+                    className="flex flex-col items-center gap-1 h-auto py-3"
+                  >
+                    <Download className="h-5 w-5" />
+                    <span className="text-xs">WebP</span>
                   </Button>
                   <Button
                     onClick={copyToClipboard}
