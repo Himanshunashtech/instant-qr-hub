@@ -764,9 +764,91 @@ END:VCARD`;
     if (shareUrl) window.open(shareUrl, "_blank", "width=600,height=400");
   };
 
+  // Build a vector-perfect SVG export: re-create a fresh SVG-typed
+  // QRCodeStyling instance mirroring the live options so gradients,
+  // rounded dots/eyes, and transparency export as true vector graphics.
+  const buildSvgBlob = async (): Promise<Blob | null> => {
+    const content = getQRContent();
+    if (!content.trim()) return null;
+
+    const appDesign = await getAppSpecificDesign();
+    const fg = appDesign?.foregroundColor || designOptions.foregroundColor;
+    const bg = appDesign?.backgroundColor || designOptions.backgroundColor;
+    const eye = designOptions.useEyeColor ? designOptions.eyeColor : fg;
+    const finalLogo = processedLogo || logo || appDesign?.appLogo || "";
+
+    const dotsOptions: any = { type: designOptions.dotStyle, color: fg };
+    if (designOptions.gradientType !== "none" && !appDesign) {
+      dotsOptions.gradient = {
+        type: designOptions.gradientType,
+        rotation: (designOptions.gradientRotation * Math.PI) / 180,
+        colorStops: [
+          { offset: 0, color: fg },
+          { offset: 1, color: designOptions.gradientColor },
+        ],
+      };
+    }
+
+    const backgroundOptions: any = designOptions.transparentBackground
+      ? { color: "transparent" }
+      : { color: bg };
+
+    const svgInstance = new QRCodeStyling({
+      width: designOptions.size,
+      height: designOptions.size,
+      type: "svg",
+      data: content,
+      margin: designOptions.margin,
+      qrOptions: { errorCorrectionLevel: designOptions.errorCorrection },
+      dotsOptions,
+      cornersSquareOptions: { type: designOptions.cornerSquareStyle, color: eye },
+      cornersDotOptions: { type: designOptions.cornerDotStyle, color: eye },
+      backgroundOptions,
+      image: finalLogo || undefined,
+      imageOptions: {
+        hideBackgroundDots: true,
+        imageSize: 0.25,
+        margin: 4,
+        crossOrigin: "anonymous",
+      },
+    });
+
+    const raw = (await svgInstance.getRawData("svg")) as Blob | string | undefined;
+    if (!raw) return null;
+    let svgText = typeof raw === "string" ? raw : await (raw as Blob).text();
+
+    // Ensure proper SVG namespace + xlink for embedded images
+    if (!/xmlns=/.test(svgText)) {
+      svgText = svgText.replace(
+        /<svg /,
+        '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ',
+      );
+    } else if (!/xmlns:xlink/.test(svgText)) {
+      svgText = svgText.replace(
+        /<svg /,
+        '<svg xmlns:xlink="http://www.w3.org/1999/xlink" ',
+      );
+    }
+
+    // Honour transparency: strip any opaque background <rect> the lib may emit.
+    if (designOptions.transparentBackground) {
+      svgText = svgText.replace(
+        /<rect[^>]*?(?:fill="(?:#?fff(?:fff)?|white|transparent)"|fill='(?:#?fff(?:fff)?|white|transparent)')[^>]*\/>/i,
+        "",
+      );
+    }
+
+    return new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+  };
+
   const downloadQR = async (format: "png" | "jpeg" | "svg" | "webp" = "png") => {
     try {
-      const blob = (await qrInstanceRef.current?.getRawData(format)) as Blob | undefined;
+      let blob: Blob | undefined;
+      if (format === "svg") {
+        blob = (await buildSvgBlob()) || undefined;
+      } else {
+        blob = (await qrInstanceRef.current?.getRawData(format)) as Blob | undefined;
+      }
       if (!blob) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -778,6 +860,7 @@ END:VCARD`;
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       toast({ title: "Downloaded", description: `QR code saved as ${format.toUpperCase()}` });
     } catch (err) {
+      console.error(err);
       toast({ title: "Error", description: "Download failed", variant: "destructive" });
     }
   };
