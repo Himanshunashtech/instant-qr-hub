@@ -763,18 +763,22 @@ END:VCARD`;
     if (shareUrl) window.open(shareUrl, "_blank", "width=600,height=400");
   };
 
-  const downloadQR = () => {
-    const blobUrl = qrObjectUrl || qrCode;
-    if (!blobUrl) return;
-
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = `qr-${selectedType}-${Date.now()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    toast({ title: "Downloaded", description: "QR code downloaded" });
+  const downloadQR = async (format: "png" | "jpeg" | "svg" | "webp" = "png") => {
+    try {
+      const blob = (await qrInstanceRef.current?.getRawData(format)) as Blob | undefined;
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-${selectedType}-${Date.now()}.${format === "jpeg" ? "jpg" : format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast({ title: "Downloaded", description: `QR code saved as ${format.toUpperCase()}` });
+    } catch (err) {
+      toast({ title: "Error", description: "Download failed", variant: "destructive" });
+    }
   };
 
   const copyToClipboard = async () => {
