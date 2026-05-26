@@ -233,9 +233,20 @@ export const ProfessionalQRGenerator = () => {
   const [designOptions, setDesignOptions] = useState<QRDesignOptions>({
     foregroundColor: "#000000",
     backgroundColor: "#FFFFFF",
-    dotStyle: "dots",
-    ringColor: "#000000", // Default ring color
-    ringWidth: 3, // Default ring width in pixels
+    dotStyle: "extra-rounded",
+    cornerSquareStyle: "extra-rounded",
+    cornerDotStyle: "dot",
+    eyeColor: "#000000",
+    useEyeColor: false,
+    gradientType: "none",
+    gradientColor: "#4f46e5",
+    gradientRotation: 0,
+    transparentBackground: false,
+    size: 512,
+    margin: 8,
+    errorCorrection: "H",
+    ringColor: "#000000",
+    ringWidth: 3,
   });
 
   // ------------------------------------------
