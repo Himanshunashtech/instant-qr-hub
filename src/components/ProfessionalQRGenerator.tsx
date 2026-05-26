@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
+import { qrTemplates } from "./qrTemplates";
 
 // ----------------------------------------------------------
 // TYPES
