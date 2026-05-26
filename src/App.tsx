@@ -10,7 +10,6 @@ import { TermsOfService } from "./pages/TermsOfService";
 
 
 import { Footer } from "./components/Footer";
-import { Contact } from "./pages/contact";
 
 import { ContactUs } from "./pages/ContactUs";
 import { PrivacyQuestions } from "./pages/PrivacyQuestions";
