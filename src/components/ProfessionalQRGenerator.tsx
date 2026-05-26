@@ -1516,22 +1516,56 @@ END:VCARD`;
               </div>
             </div> */}
 
+            {/* Templates Gallery */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-dark-panel-foreground mb-3 flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Style Templates
+              </h3>
+              <div className="grid grid-cols-5 gap-2">
+                {qrTemplates.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => setDesignOptions({ ...designOptions, ...tpl.patch })}
+                    title={`${tpl.name} — ${tpl.description}`}
+                    className="group flex flex-col items-center gap-1 p-2 rounded-lg bg-dark-input hover:bg-dark-border transition-colors"
+                  >
+                    <div
+                      className="w-10 h-10 rounded-md flex items-center justify-center border border-dark-border"
+                      style={{ background: tpl.preview.bg }}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full"
+                        style={{
+                          background: tpl.preview.accent
+                            ? `linear-gradient(135deg, ${tpl.preview.fg}, ${tpl.preview.accent})`
+                            : tpl.preview.fg,
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-dark-panel-foreground truncate w-full text-center">
+                      {tpl.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Design Panel */}
             <div className="mb-6">
               <div className="mt-4 p-4 bg-dark-input rounded-lg space-y-4">
+                {/* Colors */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-dark-panel-foreground">Foreground</Label>
                     <Input
                       type="color"
                       value={designOptions.foregroundColor}
-                      onChange={(e) => setDesignOptions({...designOptions, foregroundColor: e.target.value})}
+                      onChange={(e) => setDesignOptions({ ...designOptions, foregroundColor: e.target.value })}
                       className="h-10 w-full"
                     />
                     {getCurrentAppDesignInfo() && (
-                      <p className="text-xs text-yellow-500">
-                        ⚠ Overridden by app colors
-                      </p>
+                      <p className="text-xs text-yellow-500">⚠ Overridden by app colors</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -1539,9 +1573,158 @@ END:VCARD`;
                     <Input
                       type="color"
                       value={designOptions.backgroundColor}
-                      onChange={(e) => setDesignOptions({...designOptions, backgroundColor: e.target.value})}
+                      onChange={(e) => setDesignOptions({ ...designOptions, backgroundColor: e.target.value })}
                       className="h-10 w-full"
+                      disabled={designOptions.transparentBackground}
                     />
+                  </div>
+                </div>
+
+                {/* Dot style + Corner styles */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Dot Shape</Label>
+                    <select
+                      value={designOptions.dotStyle}
+                      onChange={(e) => setDesignOptions({ ...designOptions, dotStyle: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="square">Square</option>
+                      <option value="rounded">Rounded</option>
+                      <option value="dots">Dots</option>
+                      <option value="classy">Classy</option>
+                      <option value="classy-rounded">Classy Rounded</option>
+                      <option value="extra-rounded">Extra Rounded</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Eye Frame</Label>
+                    <select
+                      value={designOptions.cornerSquareStyle}
+                      onChange={(e) => setDesignOptions({ ...designOptions, cornerSquareStyle: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="square">Square</option>
+                      <option value="dot">Dot</option>
+                      <option value="extra-rounded">Extra Rounded</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Eye Ball</Label>
+                    <select
+                      value={designOptions.cornerDotStyle}
+                      onChange={(e) => setDesignOptions({ ...designOptions, cornerDotStyle: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="square">Square</option>
+                      <option value="dot">Dot</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Eye color toggle */}
+                <div className="grid grid-cols-2 gap-4 items-end">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={designOptions.useEyeColor}
+                        onChange={(e) => setDesignOptions({ ...designOptions, useEyeColor: e.target.checked })}
+                      />
+                      Custom Eye Color
+                    </Label>
+                    <Input
+                      type="color"
+                      value={designOptions.eyeColor}
+                      onChange={(e) => setDesignOptions({ ...designOptions, eyeColor: e.target.value })}
+                      className="h-10 w-full"
+                      disabled={!designOptions.useEyeColor}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={designOptions.transparentBackground}
+                        onChange={(e) => setDesignOptions({ ...designOptions, transparentBackground: e.target.checked })}
+                      />
+                      Transparent Background
+                    </Label>
+                  </div>
+                </div>
+
+                {/* Gradient */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Gradient</Label>
+                    <select
+                      value={designOptions.gradientType}
+                      onChange={(e) => setDesignOptions({ ...designOptions, gradientType: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="none">None</option>
+                      <option value="linear">Linear</option>
+                      <option value="radial">Radial</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Gradient Color</Label>
+                    <Input
+                      type="color"
+                      value={designOptions.gradientColor}
+                      onChange={(e) => setDesignOptions({ ...designOptions, gradientColor: e.target.value })}
+                      className="h-10 w-full"
+                      disabled={designOptions.gradientType === "none"}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">
+                      Angle: {designOptions.gradientRotation}°
+                    </Label>
+                    <Input
+                      type="range"
+                      min={0}
+                      max={360}
+                      value={designOptions.gradientRotation}
+                      onChange={(e) => setDesignOptions({ ...designOptions, gradientRotation: parseInt(e.target.value) })}
+                      className="w-full"
+                      disabled={designOptions.gradientType !== "linear"}
+                    />
+                  </div>
+                </div>
+
+                {/* Size + Margin + EC */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Size: {designOptions.size}px</Label>
+                    <Input
+                      type="range" min={256} max={2048} step={64}
+                      value={designOptions.size}
+                      onChange={(e) => setDesignOptions({ ...designOptions, size: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Quiet Zone: {designOptions.margin}</Label>
+                    <Input
+                      type="range" min={0} max={40} step={1}
+                      value={designOptions.margin}
+                      onChange={(e) => setDesignOptions({ ...designOptions, margin: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-dark-panel-foreground text-xs">Error Correction</Label>
+                    <select
+                      value={designOptions.errorCorrection}
+                      onChange={(e) => setDesignOptions({ ...designOptions, errorCorrection: e.target.value as any })}
+                      className="w-full h-9 px-2 rounded-md bg-dark-panel border border-dark-border text-dark-panel-foreground text-sm"
+                    >
+                      <option value="L">Low (~7%)</option>
+                      <option value="M">Medium (~15%)</option>
+                      <option value="Q">Quartile (~25%)</option>
+                      <option value="H">High (~30%) — recommended</option>
+                    </select>
                   </div>
                 </div>
               </div>
