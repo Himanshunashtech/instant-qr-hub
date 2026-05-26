@@ -21,12 +21,35 @@ import { useToast } from "@/hooks/use-toast";
 // TYPES
 // ----------------------------------------------------------
 
+type DotType =
+  | "square"
+  | "rounded"
+  | "dots"
+  | "classy"
+  | "classy-rounded"
+  | "extra-rounded";
+type CornerSquareType = "square" | "dot" | "extra-rounded";
+type CornerDotType = "square" | "dot";
+type ErrorCorrectionLevel = "L" | "M" | "Q" | "H";
+type GradientType = "none" | "linear" | "radial";
+
 interface QRDesignOptions {
   foregroundColor: string;
   backgroundColor: string;
-  dotStyle: "square" | "round" | "dots";
-  ringColor: string; // NEW: Color for the ring around logo
-  ringWidth: number; // NEW: Width of the ring in pixels
+  dotStyle: DotType;
+  cornerSquareStyle: CornerSquareType;
+  cornerDotStyle: CornerDotType;
+  eyeColor: string;
+  useEyeColor: boolean;
+  gradientType: GradientType;
+  gradientColor: string;
+  gradientRotation: number; // 0-360
+  transparentBackground: boolean;
+  size: number; // 256-2048
+  margin: number; // 0-40 (quiet zone)
+  errorCorrection: ErrorCorrectionLevel;
+  ringColor: string;
+  ringWidth: number;
 }
 
 interface QRType {
